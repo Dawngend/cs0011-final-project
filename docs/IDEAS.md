@@ -1,6 +1,6 @@
 # Candidate Ideas
 
-No idea is chosen yet. Each one needs a clear user and a real problem, a database that does real work, and something beyond basic CRUD. The instructor warns against ideas that are too close to basic classroom demos.
+The group chose a medication reminder app (not on the original list). See `PROPOSAL.md`. The other ideas below are kept as backups. Each one needs a clear user and a real problem, a database that does real work, and something beyond basic CRUD. The instructor warns against ideas that are too close to basic classroom demos.
 
 ## 1. Study and Exam Tracker
 

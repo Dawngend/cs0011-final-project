@@ -42,6 +42,14 @@ The idea we pick may add a fourth screen, such as a report or summary.
 - Foreign keys are declared where the idea has related tables.
 - Records must persist after the app is closed and reopened.
 
+## Reminders (Medication App)
+
+- Use `AlarmManager` to schedule each dose time and a `BroadcastReceiver` to show the notification.
+- Create one notification channel. Ask for the notification permission on Android 13 and above.
+- A notification opens the Today screen with an explicit Intent that carries the schedule id and the dose date.
+- Doses are not stored in advance. They are worked out from the schedules. The log table only stores what the user did (Taken or Skip). A past dose with no log counts as missed.
+- Decide early whether reminders are set again after a phone restart, or documented as a known limit.
+
 ## Usability and Accessibility
 
 - All text goes in `strings.xml`, colors in `colors.xml`, dimensions in `dimens.xml`.

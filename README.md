@@ -2,10 +2,11 @@
 
 Database-driven Android application for CS0011, built in Kotlin with Android Studio and SQLite. Group of 5.
 
-**Status: planning.** No app idea has been approved yet. Nothing is built.
+**Status: planning.** The group chose a medication reminder app. The proposal is drafted and waits for instructor approval. Nothing is built.
 
 ## What Is Here
 
+- `docs/PROPOSAL.md` has the Part 1 proposal draft for the medication reminder app.
 - `docs/PLAN.md` has the activity requirements as a checklist, the proposal outline, the schedule and the open questions.
 - `docs/ARCHITECTURE.md` has the app architecture we will follow whichever idea we pick.
 - `docs/IDEAS.md` has the candidate app ideas to choose from.

@@ -61,7 +61,7 @@ Before submitting, check that every file opens and that the APK installs and run
 
 ## Steps
 
-1. Pick the idea as a group (see `IDEAS.md`).
+1. Pick the idea as a group (done: medication reminder, see `PROPOSAL.md`).
 2. Fix the architecture (see `ARCHITECTURE.md`).
 3. Write the proposal and get instructor approval.
 4. Build in small steps, one branch per feature.
@@ -71,7 +71,7 @@ Before submitting, check that every file opens and that the APK installs and run
 
 ## Open Questions
 
-- Which idea does the group choose?
+- The group chose the medication reminder. The proposal draft needs a group review and instructor approval.
 - The exact due date.
 - Who are the 5 members and who does what? (to be assigned by the group leader)
 - Does the instructor approve only the proposal, or also the title in a separate step?
