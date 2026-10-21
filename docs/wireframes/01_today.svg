@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640" font-family="Arial, Helvetica, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Today screen</title>
+<desc id="d">List of today's doses with Taken and Skip buttons. The 20:00 dose is upcoming, so it has no buttons.</desc>
+<rect x="0" y="0" width="360" height="640" fill="#ffffff"/>
+<path d="M1 56 V19 a18 18 0 0 1 18 -18 H341 a18 18 0 0 1 18 18 V56 Z" fill="#d6d6d6" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="16" y="36" font-size="20" fill="#222222" font-weight="bold" text-anchor="start">Today, Oct 21</text>
+<circle cx="336" cy="20" r="2.5" fill="#222222" stroke="#222222" stroke-width="1"/>
+<circle cx="336" cy="30" r="2.5" fill="#222222" stroke="#222222" stroke-width="1"/>
+<circle cx="336" cy="40" r="2.5" fill="#222222" stroke="#222222" stroke-width="1"/>
+<rect x="16" y="72" width="328" height="104" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="100" font-size="18" fill="#222222" font-weight="bold" text-anchor="start">08:00</text>
+<text x="90" y="100" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Losartan 50 mg</text>
+<text x="90" y="120" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">After meals</text>
+<rect x="28" y="132" width="150" height="34" rx="6" fill="#4a4a4a" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="103.0" y="154.0" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="middle">Taken</text>
+<rect x="190" y="132" width="142" height="34" rx="6" fill="#fff" stroke="#222222" stroke-width="1.5"/>
+<text x="261.0" y="154.0" font-size="15" fill="#222222" font-weight="bold" text-anchor="middle">Skip</text>
+<rect x="16" y="188" width="328" height="104" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="216" font-size="18" fill="#222222" font-weight="bold" text-anchor="start">13:00</text>
+<text x="90" y="216" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Metformin 500 mg</text>
+<text x="90" y="236" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">With lunch</text>
+<rect x="28" y="248" width="150" height="34" rx="6" fill="#4a4a4a" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="103.0" y="270.0" font-size="15" fill="#ffffff" font-weight="bold" text-anchor="middle">Taken</text>
+<rect x="190" y="248" width="142" height="34" rx="6" fill="#fff" stroke="#222222" stroke-width="1.5"/>
+<text x="261.0" y="270.0" font-size="15" fill="#222222" font-weight="bold" text-anchor="middle">Skip</text>
+<rect x="16" y="304" width="328" height="104" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="332" font-size="18" fill="#222222" font-weight="bold" text-anchor="start">20:00</text>
+<text x="90" y="332" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Losartan 50 mg</text>
+<text x="90" y="352" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">After meals</text>
+<text x="28" y="386" font-size="14" fill="#555555" font-weight="normal" text-anchor="start" font-style="italic">Upcoming. Buttons appear at dose time.</text>
+<text x="180" y="440" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">Menu (three dots): Medications, Report</text>
+<text x="180" y="596" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">MediMind is a reminder tool.</text>
+<text x="180" y="614" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">It does not give medical advice.</text>
+<rect x="1" y="1" width="358" height="638" rx="18" fill="none" stroke="#222222" stroke-width="2"/>
+</svg>

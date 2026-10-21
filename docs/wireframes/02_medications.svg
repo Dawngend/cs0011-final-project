@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640" font-family="Arial, Helvetica, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Medications screen</title>
+<desc id="d">Medicine list with a search box, All, Active and Done filter, and a floating add button.</desc>
+<rect x="0" y="0" width="360" height="640" fill="#ffffff"/>
+<path d="M1 56 V19 a18 18 0 0 1 18 -18 H341 a18 18 0 0 1 18 18 V56 Z" fill="#d6d6d6" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="16" y="36" font-size="20" fill="#222222" font-weight="bold" text-anchor="start">Medications</text>
+<rect x="16" y="68" width="328" height="40" rx="6" fill="#fff" stroke="#8a8a8a" stroke-width="1.5"/>
+<circle cx="36" cy="87" r="7" fill="#fff" stroke="#555555" stroke-width="2"/>
+<line x1="41" y1="92" x2="47" y2="98" stroke="#555555" stroke-width="2"/>
+<text x="58" y="93" font-size="15" fill="#555555" font-weight="normal" text-anchor="start">Search medicines</text>
+<rect x="16" y="120" width="70" height="32" rx="16.0" fill="#4a4a4a" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="51.0" y="141.0" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">All</text>
+<rect x="94" y="120" width="86" height="32" rx="16.0" fill="#fff" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="137.0" y="141.0" font-size="14" fill="#222222" font-weight="normal" text-anchor="middle">Active</text>
+<rect x="188" y="120" width="80" height="32" rx="16.0" fill="#fff" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="228.0" y="141.0" font-size="14" fill="#222222" font-weight="normal" text-anchor="middle">Done</text>
+<rect x="16" y="170" width="328" height="76" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="201" font-size="17" fill="#222222" font-weight="bold" text-anchor="start">Losartan 50 mg</text>
+<text x="28" y="225" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">08:00, 20:00</text>
+<path d="M322 198 L330 208 L322 218" fill="none" stroke="#555555" stroke-width="2.5"/>
+<rect x="16" y="258" width="328" height="76" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="289" font-size="17" fill="#222222" font-weight="bold" text-anchor="start">Metformin 500 mg</text>
+<text x="28" y="313" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">13:00</text>
+<path d="M322 286 L330 296 L322 306" fill="none" stroke="#555555" stroke-width="2.5"/>
+<rect x="16" y="346" width="328" height="76" rx="6" fill="#e9e9e9" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="377" font-size="17" fill="#555555" font-weight="bold" text-anchor="start">Amlodipine 5 mg</text>
+<text x="28" y="401" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">07:00 (Done, ended Oct 10)</text>
+<path d="M322 374 L330 384 L322 394" fill="none" stroke="#555555" stroke-width="2.5"/>
+<circle cx="306" cy="566" r="28" fill="#4a4a4a" stroke="#222222" stroke-width="2"/>
+<line x1="306" y1="552" x2="306" y2="580" stroke="#ffffff" stroke-width="3"/>
+<line x1="292" y1="566" x2="320" y2="566" stroke="#ffffff" stroke-width="3"/>
+<text x="180" y="624" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">Tap a row for details. Tap + to add.</text>
+<rect x="1" y="1" width="358" height="638" rx="18" fill="none" stroke="#222222" stroke-width="2"/>
+</svg>

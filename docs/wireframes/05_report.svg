@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640" font-family="Arial, Helvetica, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Report screen</title>
+<desc id="d">Adherence report with a 7 or 30 day toggle, taken and missed numbers, and a list of missed doses.</desc>
+<rect x="0" y="0" width="360" height="640" fill="#ffffff"/>
+<path d="M1 56 V19 a18 18 0 0 1 18 -18 H341 a18 18 0 0 1 18 18 V56 Z" fill="#d6d6d6" stroke="#8a8a8a" stroke-width="1.5"/>
+<path d="M30 20 L20 30 L30 40" fill="none" stroke="#222222" stroke-width="2.5"/>
+<text x="44" y="36" font-size="20" fill="#222222" font-weight="bold" text-anchor="start">Report</text>
+<rect x="16" y="70" width="328" height="40" rx="20" fill="#fff" stroke="#222222" stroke-width="1.5"/>
+<path d="M36 70 H180 V110 H36 a20 20 0 0 1 -20 -20 V90 a20 20 0 0 1 20 -20 Z" fill="#4a4a4a"/>
+<text x="98" y="96" font-size="16" fill="#ffffff" font-weight="bold" text-anchor="middle">7 days</text>
+<text x="262" y="96" font-size="16" fill="#222222" font-weight="bold" text-anchor="middle">30 days</text>
+<text x="180" y="140" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">Oct 15 to Oct 21</text>
+<rect x="16" y="154" width="156" height="96" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<rect x="188" y="154" width="156" height="96" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="94" y="206" font-size="40" fill="#222222" font-weight="bold" text-anchor="middle">17</text>
+<text x="94" y="235" font-size="15" fill="#222222" font-weight="normal" text-anchor="middle">Taken</text>
+<text x="266" y="206" font-size="40" fill="#222222" font-weight="bold" text-anchor="middle">4</text>
+<text x="266" y="235" font-size="15" fill="#222222" font-weight="normal" text-anchor="middle">Missed</text>
+<text x="16" y="282" font-size="14" fill="#555555" font-weight="bold" text-anchor="start">Missed doses</text>
+<rect x="16" y="292" width="328" height="206" rx="6" fill="#f2f2f2" stroke="#8a8a8a" stroke-width="1.5"/>
+<text x="28" y="323" font-size="15" fill="#222222" font-weight="normal" text-anchor="start">Oct 19</text>
+<text x="28" y="342" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">20:00</text>
+<text x="110" y="332" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Losartan 50 mg</text>
+<line x1="24" y1="352" x2="336" y2="352" stroke="#c4c4c4" stroke-width="1"/>
+<text x="28" y="371" font-size="15" fill="#222222" font-weight="normal" text-anchor="start">Oct 17</text>
+<text x="28" y="390" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">13:00</text>
+<text x="110" y="380" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Metformin 500 mg</text>
+<line x1="24" y1="400" x2="336" y2="400" stroke="#c4c4c4" stroke-width="1"/>
+<text x="28" y="419" font-size="15" fill="#222222" font-weight="normal" text-anchor="start">Oct 16</text>
+<text x="28" y="438" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">08:00</text>
+<text x="110" y="428" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Losartan 50 mg</text>
+<line x1="24" y1="448" x2="336" y2="448" stroke="#c4c4c4" stroke-width="1"/>
+<text x="28" y="467" font-size="15" fill="#222222" font-weight="normal" text-anchor="start">Oct 15</text>
+<text x="28" y="486" font-size="14" fill="#555555" font-weight="normal" text-anchor="start">20:00</text>
+<text x="110" y="476" font-size="16" fill="#222222" font-weight="bold" text-anchor="start">Losartan 50 mg</text>
+<text x="180" y="596" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">MediMind is a reminder tool.</text>
+<text x="180" y="614" font-size="14" fill="#555555" font-weight="normal" text-anchor="middle">It does not give medical advice.</text>
+<rect x="1" y="1" width="358" height="638" rx="18" fill="none" stroke="#222222" stroke-width="2"/>
+</svg>
