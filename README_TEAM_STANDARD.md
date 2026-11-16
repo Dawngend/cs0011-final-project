@@ -1,150 +1,87 @@
-# MediMind - Team Implementation Guide
+# MediMind - Proposal Implementation Guide
 
-A medication reminder and intake tracker for the CS0011 Mobile Programming final project.
+**Repository:** https://github.com/Dawngend/cs0011-final-project
 
-This supplementary guide is added as README_TEAM_STANDARD.md. The existing README.md is retained unchanged. Read that repository overview alongside this implementation guide and the linked team standard.
+**Primary specification:** [docs/PROPOSAL.md](docs/PROPOSAL.md)
 
-**Repository:** https://github.com/Dawngend/cs0011-final-project  
-**Team standard:** 1.1, updated November 16, 2026 (Asia/Manila)  
-**David implementation:** [available files and integration guide](docs/DAVID_IMPLEMENTATION.md)
-**Implementation contract:** [docs/TEAM_STANDARD.md](docs/TEAM_STANDARD.md)
+**Supplementary implementation agreement:** [docs/TEAM_STANDARD.md](docs/TEAM_STANDARD.md), version 1.2, November 16, 2026 (Asia/Manila).
 
-MediMind saves medicines and schedules on the phone, shows dose and low-stock reminders, records Taken or Skipped actions, and reports taken, skipped, and missed doses over 7 or 30 days. It is a reminder tool and does not give medical advice.
+David's implementation and remaining screen work are described in [the integration guide](docs/DAVID_IMPLEMENTATION.md).
 
-## Start here
+This guide supplements the original README.md, which is preserved unchanged. The project proposal governs the app's scope, five screens, original tables, navigation, and report display. Our agreement supplies shared Kotlin interfaces and resolves implementation details; it does not override the proposal.
 
-1. Read this README and the [team standard](docs/TEAM_STANDARD.md) before coding.
-2. Dawn reviews the minimal starter setup included with David's branch, using the pinned build baseline below; do not overwrite it with an unrelated generated project.
-3. Review and merge David's shared models, DatabaseHelper, DateUtils, Validator, and Extras before dependent screens are merged. The implementation and tests are provided on feat/david-core.
-4. Clarence builds Form, Medications, Detail, and Report against that contract and adds their manifest entries. David's Today/reminders are included; follow the integration guide for the explicit Intent destinations.
-5. Joboy prepares the test table now, then runs it against the integrated app. Erold prepares the diagrams and user documentation from the same standard.
+## What we are building
 
-This branch includes David's models, database, utilities, Today screen, dose/stock reminders, tests, and a minimal Android starter setup. Clarence's four Activities and the final group integration remain to be completed. The repository contained planning documents without an Android project when implementation began on November 16, 2026. Instructor approval and the final course submission date are not verified by these documents; Dawn records those facts when confirmed. Preserve the repository's approval gate: Dawn confirms instructor approval before application development begins. Documentation and standardization can proceed now.
+MediMind is a local Android medication reminder and intake tracker using Kotlin, XML Views, explicit Intents, RecyclerView, and SQLiteOpenHelper. It saves medicines/schedules, reminds at dose times, records Taken or Skip, and reports Taken and Missed over 7 or 30 days. It gives no medical advice and has no accounts or online storage.
 
-## Which document wins?
+The only separately requested feature addition is optional stock tracking and low-stock notifications. It is clearly identified below and in the agreement. It is not represented as an existing proposal requirement or instructor approval.
 
-For implementation details, follow `docs/TEAM_STANDARD.md` version 1.1 and its explicitly listed changes to the PDF reference. This implementation guide is the entry point to the new standard. The supplied `MediMind-Group-Reference.pdf` remains the project brief for everything the standard does not change.
+## Alignment with the proposal
 
-The repository's existing `docs/PROPOSAL.md`, `docs/PLAN.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN_DETAIL.md` are earlier planning documents. Preserve the proposal as a historical submission record; do not silently rewrite an approved proposal. Any verified instructor requirement takes precedence and must be recorded in a follow-up standards change. `docs/IDEAS.md` is historical brainstorming.
+- Keep the original medications, schedules, and intake_logs relationships.
+- Store current schedules and edit retained schedules by ID in place. Do not add schedule versions, effective-date fields, or a next-minute cutover rule.
+- A removed time deletes its linked intake logs after confirmation; deleting a medicine cascades its schedules/logs. Editing retained times preserves their IDs and logs.
+- Detail history shows stored Taken/Skipped logs. Report's missed list is calculated from current schedules and dates.
+- Report displays two totals: Taken and Missed. Skipped remains a recorded status and is excluded from Missed; no extra Skipped tile or percentage is required.
+- Use Today's menu to open Medications or Report. Keep the existing five-screen navigation and explicit ID extras.
+- Current-schedule edits can recalculate past inferred missed counts. This is an accepted limit of the proposal schema, not a promise of immutable history.
 
-The old instruction to exchange finished code through group chat is superseded: **GitHub branches and pull requests are the shared workflow.** Chat can be used for discussion, but the merged repository contains the agreed code and decisions.
+## Low-stock addition requested by the user
 
-## Scope
+Tracking is optional. Enter a starting whole-unit quantity, units per dose (default 1), and a low-stock threshold (default 5). Units such as tablets are separate from dose text such as 500 mg.
 
-- Kotlin, Android Views/XML, View Binding, RecyclerView, and explicit Intents between Activities.
-- Local SQLite through one SQLiteOpenHelper-based DatabaseHelper.
-- Today, Medications, Medication Form, Medication Detail, and Report screens.
-- Add/edit/delete medicines, weekly schedules, search, All/Active/Done filters, validation, and confirmations.
-- AlarmManager dose reminders, permission handling, and restoration after restart.
-- Optional stock tracking with configurable low-stock notifications and a refill action in Medication Detail.
-- History and 7-/30-day reports calculated consistently from schedules and intake logs.
-- No accounts, cloud synchronization, dosage recommendations, or medical advice.
+Taken deducts stock once; Skip and calculated Missed do not. Correcting a recorded action adjusts its actual prior deduction. Stock does not become negative, and zero stock does not block recording Taken or stop dose reminders. Detail offers Add refill, which adds supply.
 
-## Low-stock notifications (added in standard 1.1)
+Notify when an Active tracked medicine reaches or falls below its threshold, including zero. Alert once per low-stock episode; refilling above the threshold resets the alert. Blocked notifications leave an inline warning and a pending alert for the next permitted check. A stock alert opens the existing Detail screen; no new Activity is added.
 
-Users can optionally track a medicine's supply by entering remaining units, units used per dose, and a low-stock threshold. Units are whole numbers such as tablets or capsules; they are separate from the dose text (for example, "500 mg"). Defaults are 1 unit per dose and a threshold of 5 units. Tracking is off until a starting quantity is entered.
+The addition needs four medication fields and one intake-log field, documented in the agreement. It does not add schedule-version columns. The revised database version is 4 to distinguish it from earlier unreleased implementations; the number does not add product features.
 
-- A successful Taken action deducts units exactly once, in the same database transaction as the intake log. Skip and calculated Missed do not deduct stock. Correcting today's recorded action adjusts only the units previously deducted for that log.
-- Notify when an Active medicine's remaining quantity is at or below its threshold, including zero. Example: "Medicine stock is low: Demo medicine has 5 units remaining."
-- Send one alert per low-stock episode. Repeated checks do not repeat the alert. Refilling above the threshold resets the alert; a refill that remains low does not generate another alert.
-- If notifications are blocked, keep a visible stock warning in Medication Detail and retry the pending alert when permission is restored and the app checks stock again.
-- A stock notification opens the existing Medication Detail screen. The user adds supply using Add refill there; no additional Activity is introduced.
-- Check after a medicine/stock save, Taken/Skip correction, or refill, and on app resume/restart. These are quantity-based alerts, not predictions of days remaining. Zero stock does not block recording Taken or suppress dose reminders.
+## Ownership
 
-David owns the stock database logic and notifications. Clarence owns stock inputs in the existing Form and the stock/refill controls in Detail. Joboy verifies deductions, correction/refill behavior, blocked permissions, and duplicate-alert prevention. Erold updates the ERD and user guide. Existing working deadlines remain unchanged; Dawn coordinates the added work.
-
-The exact fields, schema-v3 migration, shared methods, alert rules, and tests are in [section 11A of the standard](docs/TEAM_STANDARD.md#11a-low-stock-notifications).
-
-## Owners and working deadlines
-
-| Owner | Deliverables | Working deadline |
-| --- | --- | --- |
-| David Decano | Shared models, DatabaseHelper, DateUtils, Validator, Extras; then TodayActivity, DoseAdapter, ReminderScheduler, ReminderReceiver, BootReceiver; stock persistence, intake deductions/corrections, low-stock alerts | Tuesday, November 17, 2026 |
-| Clarence Canaria | Medication Form, Medications list/search/filter, Detail/history/delete, Report; stock inputs, stock display/refill action; MedicationAdapter and HistoryAdapter | Tuesday, November 17, 2026 |
-| Joboy Porras Jr. | At least 12 documented test cases; at least 3 genuine defects with cause/fix/retest; 2 evidence-based improvements; screenshots | Thursday, November 19, 2026 |
-| Erold Jan P. Leocario | ERD, UML use cases, navigation diagram, user guide, tools and architecture documentation | Thursday, November 19, 2026 |
-| Dawn Andrei Pamesa | Android setup, shared build/resources/manifest integration, code review, merges, fixes, APK, final documentation assembly and submission | After integration; final submission date to be recorded by Dawn |
-
-Everyone supplies an accurate AI-use declaration for their own work and must be able to explain it during the demo. These working deadlines come from the group reference and do not establish the instructor's submission date.
-
-## Pinned build baseline
-
-These are selected compatible versions, not claims about what is already installed or the newest releases.
-
-| Setting | Standard |
+| Member | Work |
 | --- | --- |
-| Application ID and namespace | `com.example.medimind` |
-| Android module | `app` |
-| Minimum SDK | 26 (Android 8.0) |
-| Compile SDK / Target SDK | 36 / 36 |
-| Gradle wrapper | 8.13 |
-| Android Gradle Plugin | 8.11.1 |
-| Kotlin Android plugin | 2.2.21 |
-| Gradle JDK / Java and Kotlin bytecode target | 17 / 17 |
-| AppCompat | `androidx.appcompat:appcompat:1.7.1` |
-| RecyclerView | `androidx.recyclerview:recyclerview:1.4.0` |
-| Material Views | `com.google.android.material:material:1.13.0` |
-| Lifecycle runtime | `androidx.lifecycle:lifecycle-runtime-ktx:2.9.4` |
-| Coroutines Android | `org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2` |
-| UI / storage | XML + View Binding / SQLiteOpenHelper |
-| Database | `medimind.db`, schema version **3** |
+| David Decano | Models, DatabaseHelper, DateUtils, Validator, Extras; Today/DoseAdapter; dose reminders, restart recovery, stock transactions and alerts |
+| Clarence Canaria | Form, Medications list/search/filter, Detail/history/delete, Report; stock inputs and Detail refill controls |
+| Joboy Porras Jr. | At least 12 documented tests, genuine defects/fixes/retests, improvements, screenshots |
+| Erold Jan P. Leocario | ERD, UML/use cases, navigation diagram, user guide, tools/architecture documentation |
+| Dawn Andrei Pamesa | Shared setup review, integration, merges, fixes, APK, final documentation and submission |
 
-Dawn commits the wrapper, version catalog, build scripts, and a building launcher Activity together. Use a stable Android Studio version that supports this AGP version. Use the committed Gradle wrapper rather than a separately installed Gradle. Configure the local Gradle JDK to 17. No per-person version upgrades or dynamic dependency versions.
+The group reference's working deadlines remain November 17 for David/Clarence and November 19 for Joboy/Erold. Dawn confirms the course deadline and approval status; no new deadline or instructor approval is asserted here.
 
-Compatibility references: [AGP 8.11](https://developer.android.com/build/releases/agp-8-11-0-release-notes), [Kotlin/Gradle/AGP](https://kotlinlang.org/docs/gradle-configure-project.html), [AppCompat](https://developer.android.com/jetpack/androidx/releases/appcompat), [RecyclerView](https://developer.android.com/jetpack/androidx/releases/recyclerview), [Material 1.13](https://github.com/material-components/material-components-android/releases/tag/1.13.0), [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle), [Coroutines 1.10.2](https://github.com/Kotlin/kotlinx.coroutines/releases/tag/1.10.2).
+## Build baseline
 
-## Git workflow
+Use applicationId/namespace com.example.medimind, module app, minSdk 26, compileSdk/targetSdk 36, JDK/JVM target 17, Gradle wrapper 8.13, AGP 8.11.1, and Kotlin 2.2.21. Use the shared starter project rather than independently generating conflicting projects.
 
-Clone the shared repository once:
+Pinned libraries: AppCompat 1.7.1, RecyclerView 1.4.0, Material Views 1.13.0, Lifecycle runtime KTX 2.9.4, Coroutines Android 1.10.2. These are implementation pins, not proposal feature requirements. See the [AGP compatibility](https://developer.android.com/build/releases/agp-8-11-0-release-notes) and [Kotlin compatibility](https://kotlinlang.org/docs/gradle-configure-project.html) references.
+
+Once the implementation branch is merged:
+
+```powershell
+.\gradlew.bat assembleDebug lintDebug testDebugUnitTest
+.\gradlew.bat connectedDebugAndroidTest
+```
+
+Use a dedicated emulator for instrumented tests. Report actual checks; do not claim unrun device or reboot tests.
+
+## Shared Git workflow
+
+Work in the shared repository, with feature branches and PRs reviewed/merged by Dawn. The original PDF's group-chat file exchange is superseded by the user's repository instruction. Merge the database/model API before dependent screen work.
 
 ```powershell
 git clone https://github.com/Dawngend/cs0011-final-project.git
 cd cs0011-final-project
-```
-
-Start a feature from an updated, clean `main`:
-
-```powershell
 git switch main
 git pull --ff-only origin main
-git switch -c feat/david-database
+git switch -c feat/your-feature
 ```
 
-Use separate branches such as `feat/dawn-project-setup`, `feat/david-database`, `feat/david-today-reminders`, `feat/clarence-medication-screens`, `test/joboy-acceptance`, and `docs/erold-design-guide`. Integrate David's database PR before the dependent screen PRs.
+Do not overwrite another member's work or force-push main. Commit the wrapper, including its JAR; exclude local.properties, caches, all module build output, APKs, keystores, credentials, and real health data. Update the agreement when a shared interface changes. An author must review and be able to explain AI-assisted code and accurately declare AI use.
 
-Commit selected files, push your feature branch, and open a pull request into `main`. Dawn reviews and merges; the author resolves conflicts on the feature branch. Do not force-push `main`, overwrite another member's files, or merge failing builds. A branch name does not give exclusive ownership of shared resource files; coordinate edits to strings, build files, and the manifest in the PR.
+## Document precedence
 
-Each PR states the behavior changed, affected files/contracts, checks actually run, and any remaining issue. Update the standard in the same PR whenever a shared contract changes. Keep commits small and descriptive. Follow [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow).
+1. Verified instructor requirements and the repository proposal govern scope.
+2. The user's explicit low-stock request is a separate addition, not silently part of the original proposal.
+3. Existing architecture/design notes and the group PDF provide details where consistent with the proposal.
+4. TEAM_STANDARD.md fills only unresolved interface/behavior details and describes the stock addition. Version 1.2 replaces our earlier versioning/report/cutover choices.
 
-Do not commit `local.properties`, `.gradle/`, `.idea/`, `**/build/`, APK/AAB files, keystores, signing passwords, real medicine data, or device database files. Keep the Gradle wrapper files in Git, including its JAR. Dawn expands the existing root-only build ignore to `**/build/` during setup. Deliver the final APK through the agreed submission or release channel.
-
-## Build and check
-
-After the Android starter project has been merged, run these from the repository root:
-
-```powershell
-.\gradlew.bat assembleDebug lintDebug testDebugUnitTest
-```
-
-With an emulator or test phone connected:
-
-```powershell
-.\gradlew.bat connectedDebugAndroidTest
-```
-
-The second command is required once instrumented database tests exist. Before a merge, run the checks relevant to the change and report what actually ran; documentation-only changes do not require an Android build. Dawn verifies a clean-clone build and APK installation before submission. Use at least an API 26 emulator and an API 36 emulator/device for the final smoke test.
-
-Joboy's functional checklist is in [the acceptance section](docs/TEAM_STANDARD.md#14-acceptance-checklist). Test records and screenshots must use fictional medicines and test data.
-
-## Most important contract decisions
-
-- Database code owns expected-dose and status calculations; screens display the returned values.
-- Only TAKEN and SKIPPED are stored. MISSED and UPCOMING are calculated.
-- A report includes today and the preceding 6 or 29 dates, excluding doses later than the current minute.
-- Schedule changes preserve history by closing old schedule versions and inserting replacements. The schema adds `effective_from`, `effective_until`, and `is_current` to schedules.
-- Changing or removing a time preserves history. Deleting the entire medicine permanently deletes its schedules and logs after confirmation.
-- Reminder permission failures do not prevent a medicine from being saved.
-- Stock tracking is optional. Taken updates stock atomically; low-stock alerts are deduplicated until supply rises above the threshold. Stock requirements are an explicit feature addition to the original PDF.
-- All IDs are Long, weekday numbers are Monday=1 through Sunday=7, and optional text is SQL NULL rather than an empty string.
-
-Read the full standard before implementing these decisions; it defines exact fields, signatures, update rules, messages, and boundary behavior.
+The original proposal is preserved as-is. Its draft/approval label is not independently verified by this guide.
