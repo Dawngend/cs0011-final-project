@@ -6,6 +6,7 @@ This supplementary guide is added as README_TEAM_STANDARD.md. The existing READM
 
 **Repository:** https://github.com/Dawngend/cs0011-final-project  
 **Team standard:** 1.1, updated November 16, 2026 (Asia/Manila)  
+**David implementation:** [available files and integration guide](docs/DAVID_IMPLEMENTATION.md)
 **Implementation contract:** [docs/TEAM_STANDARD.md](docs/TEAM_STANDARD.md)
 
 MediMind saves medicines and schedules on the phone, shows dose and low-stock reminders, records Taken or Skipped actions, and reports taken, skipped, and missed doses over 7 or 30 days. It is a reminder tool and does not give medical advice.
@@ -13,12 +14,12 @@ MediMind saves medicines and schedules on the phone, shows dose and low-stock re
 ## Start here
 
 1. Read this README and the [team standard](docs/TEAM_STANDARD.md) before coding.
-2. Dawn creates and merges the Android starter project using the pinned build baseline below.
-3. David implements and merges the shared models, database contract, DateUtils, Validator, and Extras before dependent screens are merged.
-4. Clarence builds the Form, Medications, Detail, and Report screens against that contract. David builds Today and reminders.
+2. Dawn reviews the minimal starter setup included with David's branch, using the pinned build baseline below; do not overwrite it with an unrelated generated project.
+3. Review and merge David's shared models, DatabaseHelper, DateUtils, Validator, and Extras before dependent screens are merged. The implementation and tests are provided on feat/david-core.
+4. Clarence builds Form, Medications, Detail, and Report against that contract and adds their manifest entries. David's Today/reminders are included; follow the integration guide for the explicit Intent destinations.
 5. Joboy prepares the test table now, then runs it against the integrated app. Erold prepares the diagrams and user documentation from the same standard.
 
-This package contains documentation, not a completed Android application. The public repository was reviewed on November 16, 2026 and contained planning documents without an Android project. Instructor approval and the final course submission date are not verified by these documents; Dawn records those facts when confirmed. Preserve the repository's approval gate: Dawn confirms instructor approval before application development begins. Documentation and standardization can proceed now.
+This branch includes David's models, database, utilities, Today screen, dose/stock reminders, tests, and a minimal Android starter setup. Clarence's four Activities and the final group integration remain to be completed. The repository contained planning documents without an Android project when implementation began on November 16, 2026. Instructor approval and the final course submission date are not verified by these documents; Dawn records those facts when confirmed. Preserve the repository's approval gate: Dawn confirms instructor approval before application development begins. Documentation and standardization can proceed now.
 
 ## Which document wins?
 

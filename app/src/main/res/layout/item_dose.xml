@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/card" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/space_medium" android:orientation="vertical" android:padding="@dimen/space_medium" android:background="@color/card">
+    <TextView android:id="@+id/time" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="@dimen/text_title" android:textStyle="bold" android:textColor="@color/primary" />
+    <TextView android:id="@+id/name" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="@dimen/text_body" android:textStyle="bold" android:textColor="@color/text_primary" />
+    <TextView android:id="@+id/instructions" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="@dimen/text_body" android:textColor="@color/text_secondary" />
+    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="@dimen/text_caption" android:textColor="@color/text_secondary" />
+    <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button android:id="@+id/taken" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" android:text="@string/action_taken" />
+        <Button android:id="@+id/skip" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" android:text="@string/action_skip" />
+    </LinearLayout>
+    <Button android:id="@+id/change" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" android:text="@string/action_change" />
+</LinearLayout>

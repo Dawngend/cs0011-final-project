@@ -1,0 +1,6 @@
+<resources>
+    <plurals name="stock_low_message">
+        <item quantity="one">%1$s has %2$d unit remaining.</item>
+        <item quantity="other">%1$s has %2$d units remaining.</item>
+    </plurals>
+</resources>

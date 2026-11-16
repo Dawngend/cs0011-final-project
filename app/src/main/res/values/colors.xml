@@ -1,0 +1,6 @@
+<resources>
+    <color name="primary">#166B63</color><color name="on_primary">#FFFFFF</color>
+    <color name="surface">#F5F8F7</color><color name="text_primary">#172B29</color>
+    <color name="text_secondary">#425E58</color><color name="warning">#804600</color>
+    <color name="highlight">#D7F1E9</color><color name="card">#FFFFFF</color>
+</resources>

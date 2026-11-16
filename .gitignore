@@ -11,3 +11,7 @@
 *.aab
 *.jks
 *.keystore
+
+# All module build output and Kotlin caches
+**/build/
+.kotlin/
