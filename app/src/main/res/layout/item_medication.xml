@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_medium"
+    android:background="@color/card"
+    android:orientation="vertical"
+    android:padding="@dimen/space_medium">
+    <TextView android:id="@+id/name" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_primary" android:textSize="@dimen/text_title" android:textStyle="bold" />
+    <TextView android:id="@+id/dose" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="@dimen/text_body" />
+    <TextView android:id="@+id/schedule" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="@dimen/text_body" />
+    <TextView android:id="@+id/stock" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/primary" android:textSize="@dimen/text_caption" />
+</LinearLayout>

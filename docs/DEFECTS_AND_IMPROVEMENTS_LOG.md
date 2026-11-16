@@ -1,6 +1,6 @@
 # Defects and Improvements Log (Template)
 
-**Status:** draft for the group to review. This file is an empty template. No defects or improvements are recorded because nothing has been built or tested yet. Fill it in only with what really happens during testing.
+**Status:** preliminary log. The build and smoke checks passed on a Pixel 10 Pro API 37.1 emulator. No application defect has been confirmed yet; the full functional test cases are still pending.
 
 The activity needs at least 3 defects with corrections and at least 2 improvements based on test evidence.
 
@@ -40,8 +40,8 @@ Add rows as needed. Optional extra columns: date, commit, before and after scree
 
 | Item | Count |
 | --- | --- |
-| Test cases run | |
-| Passed on first run | |
+| Test cases run | 13 smoke checks |
+| Passed on first run | 12 |
 | Defects found | |
 | Defects fixed and retested | |
 | Improvements made | |

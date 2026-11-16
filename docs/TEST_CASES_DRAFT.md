@@ -1,6 +1,6 @@
 # Test Cases (Draft)
 
-**Status:** draft for the group to review. These are plans only. Nothing has been run, so every status is "not run". The app is not built yet.
+**Status:** draft with preliminary execution results. The project now builds and runs on a Pixel 10 Pro API 37.1 emulator. The detailed cases below still require manual completion.
 
 The activity needs at least 12 documented test cases. This draft has 20, so the group can drop or merge some. Message ids (M-S1 and so on) refer to `DESIGN_DETAIL.md`, section 6.
 
@@ -9,6 +9,26 @@ The activity needs at least 12 documented test cases. This draft has 20, so the 
 First, run each case on the emulator or a real phone and fill in the actual result. Then set the status to Pass or Fail. If a case fails, copy it into `DEFECTS_AND_IMPROVEMENTS_LOG.md` as a real defect. Finally, after the fix, run the case again and note the retest result.
 
 Add these columns when you run the cases: actual result, status date, device and Android version, and the screenshot file name.
+
+## Preliminary Execution Results
+
+| ID | Check | Actual result | Status |
+| --- | --- | --- | --- |
+| SM-01 | Gradle sync, build and install | Android Studio synchronized the project, built the APK, and installed it successfully. | Pass |
+| SM-02 | Launch and Today empty state | MediMind launched without crashing and displayed Today with the empty-dose message before test data was present. | Pass |
+| SM-03 | Existing medication list | The Medications screen loaded the user-entered Biogesic and Dolan records and displayed their dose and stock-tracking status. | Pass |
+| SM-04 | Notification permission | The Android notification permission was granted by the tester. | Pass |
+| SM-05 | Exact alarm permission | Tester manually verified that a reminder notification rang when the scheduled exact time was reached on the emulator. | Pass — tester verified |
+| SM-06 | Taken and Skip controls | A past dose displayed Taken and Skip controls. After the test interaction, the dose status displayed Skipped. | Pass — partially observed |
+| SM-07 | Detail screen | Tapping Biogesic opened Detail and displayed its dose, schedule, dates, and intake-history area. | Pass |
+| SM-08 | Edit form | Edit opened with Biogesic's saved fields populated. | Pass |
+| SM-09 | Delete confirmation | Delete opened the confirmation dialog; Cancel returned to Detail without deleting the medication. | Pass |
+| SM-10 | Report screen | Tester verified that the Report screen works. | Pass — tester verified |
+| SM-11 | Stock tracking UI | Tester verified that stock fields become visible and stock tracking works. | Pass — tester verified |
+| SM-12 | Refill and low-stock notification | Tester verified refill behavior and the low-stock notification. | Pass — tester verified |
+| SM-13 | Search and filter | Tester verified that the search and filter controls work. | Pass — tester verified |
+
+These smoke checks do not replace the 20 functional cases below. Record the date and screenshots when the group completes each case.
 
 ## Test Data
 

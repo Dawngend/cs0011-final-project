@@ -11,6 +11,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.MedicationFormActivity" android:exported="false" />
+        <activity android:name=".ui.MedicationsActivity" android:exported="false" />
+        <activity android:name=".ui.MedicationDetailActivity" android:exported="false" />
+        <activity android:name=".ui.ReportActivity" android:exported="false" />
         <receiver android:name=".reminder.ReminderReceiver" android:exported="false" />
         <receiver android:name=".reminder.BootReceiver" android:exported="false">
             <intent-filter>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+
+        <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="@dimen/text_title" android:textStyle="bold" android:textColor="@color/text_primary" />
+        <EditText android:id="@+id/name" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Medicine name" android:inputType="textCapSentences" android:minHeight="@dimen/touch_target" />
+        <EditText android:id="@+id/dose" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Dose (for example, 500 mg)" android:inputType="text" android:minHeight="@dimen/touch_target" />
+        <EditText android:id="@+id/instructions" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Instructions (optional)" android:inputType="textCapSentences|textMultiLine" android:minHeight="@dimen/touch_target" />
+
+        <EditText android:id="@+id/startDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Start date" android:focusable="false" android:clickable="true" android:minHeight="@dimen/touch_target" />
+        <EditText android:id="@+id/endDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="End date (optional)" android:focusable="false" android:clickable="true" android:minHeight="@dimen/touch_target" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Times" android:textStyle="bold" android:textColor="@color/text_primary" android:paddingTop="@dimen/space_medium" />
+        <LinearLayout android:id="@+id/times" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        <Button android:id="@+id/addTime" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Add time" android:minHeight="@dimen/touch_target" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Days" android:textStyle="bold" android:textColor="@color/text_primary" android:paddingTop="@dimen/space_medium" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <CheckBox android:id="@+id/monday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="M" />
+            <CheckBox android:id="@+id/tuesday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="T" />
+            <CheckBox android:id="@+id/wednesday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="W" />
+            <CheckBox android:id="@+id/thursday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="T" />
+            <CheckBox android:id="@+id/friday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="F" />
+            <CheckBox android:id="@+id/saturday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="S" />
+            <CheckBox android:id="@+id/sunday" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="S" />
+        </LinearLayout>
+
+        <CheckBox android:id="@+id/stockTracking" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Track stock and receive low-stock notifications" android:paddingTop="@dimen/space_medium" />
+        <LinearLayout android:id="@+id/stockFields" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <EditText android:id="@+id/stockQuantity" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Current stock (whole units)" android:inputType="number" android:minHeight="@dimen/touch_target" />
+            <EditText android:id="@+id/unitsPerDose" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Units per dose" android:inputType="number" android:minHeight="@dimen/touch_target" />
+            <EditText android:id="@+id/lowStockThreshold" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Low-stock threshold" android:inputType="number" android:minHeight="@dimen/touch_target" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingTop="@dimen/space_medium">
+            <Button android:id="@+id/cancel" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Cancel" />
+            <Button android:id="@+id/save" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Save" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
