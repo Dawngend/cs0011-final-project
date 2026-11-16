@@ -171,32 +171,39 @@ class DatabaseContractTest {
     }
 
     @Test
-    fun scheduleEditPreservesOldDosesAndDoesNotInventPastReplacement() {
+    fun scheduleEditAppliesImmediatelyAndPreservesRetainedIdsAndLogs() {
         val id = add()
-        val existing = db.getSchedulesForMedication(id)
-        assertTrue(db.saveIntake(existing.first().id, "2026-11-16", "TAKEN"))
+        val original = db.getSchedulesForMedication(id)
+        val sid = original.first().id
+        assertTrue(db.saveIntake(sid, "2026-11-16", "TAKEN"))
+        val storedId = logId()
         at("2026-11-16 10:15")
-        val desired = listOf(existing.first().copy(timeOfDay = "09:00"), existing.last())
-        assertTrue(db.updateMedication(requireNotNull(db.getMedication(id)), desired))
-        val current = db.getSchedulesForMedication(id)
-        assertNotEquals(existing.first().id, current.first().id)
-        assertEquals(existing.last().id, current.last().id)
-        assertEquals("08:00", db.getHistoryForMedication(id).single().timeOfDay)
-        assertEquals(DoseStatus.TAKEN, db.getHistoryForMedication(id).single().status)
-        at("2026-11-17 10:00")
-        assertEquals("09:00", db.getTodayDoses("2026-11-17", 2).first().timeOfDay)
+        assertTrue(
+            db.updateMedication(
+                requireNotNull(db.getMedication(id)),
+                listOf(original.first().copy(timeOfDay = "09:00"), original.last()),
+            ),
+        )
+        assertEquals(sid, db.getSchedulesForMedication(id).first().id)
+        assertEquals(2, rowCount("schedules"))
+        assertEquals("09:00", db.getTodayDoses("2026-11-16", 1).first().timeOfDay)
+        assertEquals(IntakeStatus.TAKEN, db.getHistoryForMedication(id).single().status)
+        assertEquals(storedId, db.getHistoryForMedication(id).single().id)
     }
 
     @Test
-    fun removingTimeKeepsHistoryAndStaleScheduleIdsRollbackMetadata() {
-        val id = add()
-        val existing = db.getSchedulesForMedication(id)
+    fun removingTimeDeletesItsLogsWithoutRefundAndStaleIdsRollback() {
+        val id = add(stock = 10)
+        val original = db.getSchedulesForMedication(id)
         val med = requireNotNull(db.getMedication(id))
-        assertTrue(db.updateMedication(med, listOf(existing.last())))
-        assertEquals(1, db.getHistoryForMedication(id).size)
-        assertFalse(db.updateMedication(med.copy(name = "Should not save"), existing))
+        assertTrue(db.saveIntake(original.first().id, "2026-11-16", "TAKEN"))
+        assertTrue(db.updateMedication(med, listOf(original.last())))
+        assertTrue(db.getHistoryForMedication(id).isEmpty())
+        assertEquals(0, rowCount("intake_logs"))
+        assertEquals(1, rowCount("schedules"))
+        assertEquals(9, db.getMedication(id)?.stockQuantity)
+        assertFalse(db.updateMedication(med.copy(name = "Must not save"), original))
         assertEquals(med.name, db.getMedication(id)?.name)
-        assertEquals(2, rowCount("schedules"))
     }
 
     @Test
@@ -215,19 +222,23 @@ class DatabaseContractTest {
     }
 
     @Test
-    fun editedDatesAndInactivePlanDoNotEraseEarlierMissedDoses() {
+    fun inactivePlanRecalculatesMissedButKeepsRecordedHistoryAndCounts() {
         val id = add()
-        val med = requireNotNull(db.getMedication(id))
+        val original = db.getSchedulesForMedication(id)
+        assertTrue(db.saveIntake(original.first().id, "2026-11-16", "TAKEN"))
         assertTrue(
-            db.updateMedication(med.copy(isActive = false), db.getSchedulesForMedication(id)),
+            db.updateMedication(
+                requireNotNull(db.getMedication(id)).copy(isActive = false),
+                original,
+            ),
         )
-        at("2026-11-17 10:00")
-        assertTrue(db.getTodayDoses("2026-11-17", 2).isEmpty())
+        assertTrue(db.getTodayDoses("2026-11-16", 1).isEmpty())
         assertEquals(1, db.getHistoryForMedication(id).size)
+        assertEquals(AdherenceSummary(1, 0, 0), db.getAdherenceSummary(7, "2026-11-16", "10:00"))
     }
 
     @Test
-    fun wholeMedicineDeletionCascadesEveryVersionAndLog() {
+    fun wholeMedicineDeletionCascadesSchedulesAndLogs() {
         val id = add()
         val schedules = db.getSchedulesForMedication(id)
         db.saveIntake(schedules.first().id, "2026-11-16", "TAKEN")
@@ -239,17 +250,17 @@ class DatabaseContractTest {
     }
 
     @Test
-    fun scheduleInsertFailureRollsBackRetirementAndMetadata() {
+    fun scheduleUpdateFailureRollsBackMetadataAndSchedules() {
         val id = add()
         val med = requireNotNull(db.getMedication(id))
         val original = db.getSchedulesForMedication(id)
         db.writableDatabase.execSQL(
-            "CREATE TRIGGER fail_schedule BEFORE INSERT ON schedules WHEN NEW.time_of_day='09:00' BEGIN SELECT RAISE(ABORT,'test failure'); END",
+            "CREATE TRIGGER fail_schedule BEFORE UPDATE OF time_of_day ON schedules WHEN NEW.time_of_day='09:00' BEGIN SELECT RAISE(ABORT,'test failure'); END",
         )
         assertFalse(
             db.updateMedication(
                 med.copy(name = "Must rollback"),
-                listOf(original.first().copy(timeOfDay = "09:00"), original.last()),
+                listOf(original.first().copy(timeOfDay = "09:00")),
             ),
         )
         assertEquals(med.name, db.getMedication(id)?.name)
@@ -278,6 +289,88 @@ class DatabaseContractTest {
         migration(2)
     }
 
+    @Test
+    fun migrationFromExpandedVersion3KeepsCurrentLogsStockAndSequence() {
+        migration(3)
+        assertEquals(listOf("08:00"), db.getSchedulesForMedication(42).map { it.timeOfDay })
+        assertEquals(1, db.getHistoryForMedication(42).single().stockDeducted)
+        val current = db.getSchedulesForMedication(42)
+        assertTrue(
+            db.updateMedication(requireNotNull(db.getMedication(42)), current + times("20:00")),
+        )
+        assertTrue(db.getSchedulesForMedication(42).last().id > 150L)
+    }
+
+    @Test
+    fun freshScheduleColumnsMatchProposalAndHistoryContainsOnlyActions() {
+        val id = add()
+        val columns =
+            db.readableDatabase.rawQuery("PRAGMA table_info(schedules)", null).use { c ->
+                buildList { while (c.moveToNext()) add(c.getString(1)) }
+            }
+        assertEquals(listOf("id", "medication_id", "time_of_day", "days_of_week"), columns)
+        assertTrue(db.getHistoryForMedication(id).isEmpty())
+        assertEquals(1, db.getMissedDoses("2026-11-16", "2026-11-16", "10:00").size)
+    }
+
+    @Test
+    fun swappingRetainedTimesKeepsTheirIdsAndLogAssociation() {
+        val id = add()
+        val original = db.getSchedulesForMedication(id)
+        assertTrue(db.saveIntake(original.first().id, "2026-11-16", "TAKEN"))
+        assertTrue(
+            db.updateMedication(
+                requireNotNull(db.getMedication(id)),
+                listOf(
+                    original.first().copy(timeOfDay = "20:00"),
+                    original.last().copy(timeOfDay = "08:00"),
+                ),
+            ),
+        )
+        assertEquals(original.last().id, db.getSchedulesForMedication(id).first().id)
+        assertEquals(original.first().id, db.getHistoryForMedication(id).single().scheduleId)
+        assertEquals(1, db.getAdherenceSummary(7, "2026-11-16", "10:00").taken)
+        assertTrue(db.saveIntake(original.first().id, "2026-11-16", "SKIPPED"))
+    }
+
+    @Test
+    fun migrationRejectsRecordedRetiredVersionsWithoutErasingOriginalDatabase() {
+        db.close()
+        context.deleteDatabase(filename)
+        val legacy = context.openOrCreateDatabase(filename, Context.MODE_PRIVATE, null)
+        val sql =
+            InstrumentationRegistry.getInstrumentation()
+                .context
+                .assets
+                .open("schema_v3.sql")
+                .bufferedReader()
+                .use { it.readText() }
+        sql.split(';').filter { it.isNotBlank() }.forEach(legacy::execSQL)
+        legacy.execSQL(
+            "INSERT INTO medications(id,name,dose,start_date) VALUES (42,'Legacy demo','500 mg','2026-11-15')",
+        )
+        legacy.execSQL(
+            "INSERT INTO schedules(id,medication_id,time_of_day,days_of_week,effective_from,is_current) VALUES (81,42,'08:00','1','2026-11-15 00:00',0)",
+        )
+        legacy.execSQL(
+            "INSERT INTO intake_logs(id,schedule_id,dose_date,status,logged_at) VALUES (91,81,'2026-11-15','TAKEN','2026-11-15 08:01')",
+        )
+        legacy.version = 3
+        legacy.close()
+        db = DatabaseHelper(context, filename)
+        try {
+            db.writableDatabase
+            fail("Migration must protect archived recorded history")
+        } catch (_: android.database.sqlite.SQLiteException) {}
+        context.openOrCreateDatabase(filename, Context.MODE_PRIVATE, null).use { original ->
+            assertEquals(3, original.version)
+            original.rawQuery("SELECT COUNT(*) FROM intake_logs WHERE id=91", null).use {
+                it.moveToFirst()
+                assertEquals(1, it.getInt(0))
+            }
+        }
+    }
+
     private fun migration(version: Int) {
         db.close()
         context.deleteDatabase(filename)
@@ -304,16 +397,24 @@ class DatabaseContractTest {
         legacy.execSQL(
             "INSERT INTO intake_logs(id,schedule_id,dose_date,status,logged_at) VALUES (91,81,'2026-11-15','TAKEN','2026-11-15 08:01')",
         )
+        if (version == 3) {
+            legacy.execSQL("UPDATE medications SET stock_quantity=7,units_per_dose=2 WHERE id=42")
+            legacy.execSQL("UPDATE intake_logs SET stock_deducted=1 WHERE id=91")
+            legacy.execSQL(
+                "INSERT INTO schedules(id,medication_id,time_of_day,days_of_week,effective_from,is_current) VALUES (150,42,'07:00','1','2026-11-15 00:00',0)",
+            )
+        }
         legacy.version = version
         legacy.close()
         db = DatabaseHelper(context, filename)
         assertEquals(42L, db.getMedication(42)?.id)
         assertEquals(listOf(42L), db.getAllMedications(null, MedFilter.ACTIVE).map { it.id })
-        assertNull(db.getMedication(42)?.stockQuantity)
+        if (version == 3) assertEquals(7, db.getMedication(42)?.stockQuantity)
+        else assertNull(db.getMedication(42)?.stockQuantity)
         assertEquals(81L, db.getSchedule(81)?.id)
         assertEquals(91L, logId())
         assertEquals(1, rowCount("intake_logs"))
-        assertEquals(3, db.readableDatabase.version)
-        assertEquals(1, db.getHistoryForMedication(42).count { it.status == DoseStatus.TAKEN })
+        assertEquals(4, db.readableDatabase.version)
+        assertEquals(1, db.getHistoryForMedication(42).count { it.status == IntakeStatus.TAKEN })
     }
 }

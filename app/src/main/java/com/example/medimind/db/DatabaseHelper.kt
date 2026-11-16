@@ -24,56 +24,89 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        require(oldVersion in 1..2 && newVersion == 3) { "Unsupported database migration" }
+        require(oldVersion in 1..3 && newVersion == DATABASE_VERSION) {
+            "Unsupported database migration"
+        }
         db.execSQL("UPDATE medications SET end_date=NULL WHERE trim(end_date)=''")
         db.execSQL("UPDATE medications SET instructions=NULL WHERE trim(instructions)=''")
-        db.execSQL(
-            "ALTER TABLE medications ADD COLUMN stock_quantity INTEGER CHECK (stock_quantity IS NULL OR stock_quantity >= 0)",
-        )
-        db.execSQL(
-            "ALTER TABLE medications ADD COLUMN units_per_dose INTEGER NOT NULL DEFAULT 1 CHECK (units_per_dose >= 1)",
-        )
-        db.execSQL(
-            "ALTER TABLE medications ADD COLUMN low_stock_threshold INTEGER NOT NULL DEFAULT 5 CHECK (low_stock_threshold >= 0)",
-        )
-        db.execSQL(
-            "ALTER TABLE medications ADD COLUMN low_stock_notified INTEGER NOT NULL DEFAULT 0 CHECK (low_stock_notified IN (0,1))",
-        )
-        db.execSQL(
-            "ALTER TABLE intake_logs ADD COLUMN stock_deducted INTEGER NOT NULL DEFAULT 0 CHECK (stock_deducted >= 0)",
-        )
-        if (oldVersion == 1) {
-            db.execSQL("ALTER TABLE schedules ADD COLUMN effective_from TEXT NOT NULL DEFAULT ''")
-            db.execSQL("ALTER TABLE schedules ADD COLUMN effective_until TEXT")
+        if (oldVersion < 3) {
             db.execSQL(
-                "ALTER TABLE schedules ADD COLUMN is_current INTEGER NOT NULL DEFAULT 1 CHECK (is_current IN (0,1))",
+                "ALTER TABLE medications ADD COLUMN stock_quantity INTEGER CHECK (stock_quantity IS NULL OR stock_quantity >= 0)",
             )
-            val now = DateUtils.now()
-            val meds = medications(db).associateBy { it.id }
-            rows(db, "schedules", mapper = { c -> c.long("id") to c.long("medication_id") })
-                .forEach { (id, medId) ->
-                    val m = meds[medId] ?: throw SQLiteException("Orphan schedule during migration")
-                    val lower = requireNotNull(DateUtils.parseDate(m.startDate)).atStartOfDay()
-                    var upper =
-                        m.endDate?.let {
-                            requireNotNull(DateUtils.parseDate(it)).plusDays(1).atStartOfDay()
-                        }
-                    if (!m.isActive) upper = maxOf(lower, minOf(upper ?: now, now))
-                    val values =
-                        ContentValues().apply {
-                            put("effective_from", DateUtils.formatTimestamp(lower))
-                            put("effective_until", upper?.let(DateUtils::formatTimestamp))
-                        }
-                    db.update("schedules", values, "id=?", arrayOf(id.toString()))
-                }
             db.execSQL(
-                "CREATE UNIQUE INDEX idx_schedules_current_time ON schedules(medication_id,time_of_day) WHERE is_current=1",
+                "ALTER TABLE medications ADD COLUMN units_per_dose INTEGER NOT NULL DEFAULT 1 CHECK (units_per_dose >= 1)",
+            )
+            db.execSQL(
+                "ALTER TABLE medications ADD COLUMN low_stock_threshold INTEGER NOT NULL DEFAULT 5 CHECK (low_stock_threshold >= 0)",
+            )
+            db.execSQL(
+                "ALTER TABLE medications ADD COLUMN low_stock_notified INTEGER NOT NULL DEFAULT 0 CHECK (low_stock_notified IN (0,1))",
+            )
+            db.execSQL(
+                "ALTER TABLE intake_logs ADD COLUMN stock_deducted INTEGER NOT NULL DEFAULT 0 CHECK (stock_deducted >= 0)",
             )
         }
+        if (oldVersion >= 2) removeDevelopmentVersioning(db)
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_schedules_medication_time ON schedules(medication_id,time_of_day)",
+        )
         db.execSQL(
             "CREATE INDEX IF NOT EXISTS idx_schedules_medication ON schedules(medication_id)",
         )
         db.execSQL("CREATE INDEX IF NOT EXISTS idx_logs_date ON intake_logs(dose_date)")
+    }
+
+    /**
+     * Earlier expanded builds were never released. Do not silently erase their recorded history.
+     */
+    private fun removeDevelopmentVersioning(db: SQLiteDatabase) {
+        val retiredLogs =
+            db.rawQuery(
+                    "SELECT COUNT(*) FROM intake_logs l JOIN schedules s ON s.id=l.schedule_id WHERE s.is_current=0",
+                    null,
+                )
+                .use {
+                    it.moveToFirst()
+                    it.getLong(0)
+                }
+        if (retiredLogs != 0L)
+            throw SQLiteException(
+                "Export recorded retired schedules before converting this development database",
+            )
+        val scheduleSequence = sequence(db, "schedules")
+        val logSequence = sequence(db, "intake_logs")
+        db.execSQL(
+            "CREATE TABLE schedules_new (id INTEGER PRIMARY KEY AUTOINCREMENT, medication_id INTEGER NOT NULL, time_of_day TEXT NOT NULL, days_of_week TEXT NOT NULL, FOREIGN KEY(medication_id) REFERENCES medications(id) ON DELETE CASCADE)",
+        )
+        db.execSQL(
+            "INSERT INTO schedules_new(id,medication_id,time_of_day,days_of_week) SELECT id,medication_id,time_of_day,days_of_week FROM schedules WHERE is_current=1",
+        )
+        db.execSQL(
+            "CREATE TABLE intake_logs_new (id INTEGER PRIMARY KEY AUTOINCREMENT, schedule_id INTEGER NOT NULL, dose_date TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('TAKEN','SKIPPED')), logged_at TEXT NOT NULL, stock_deducted INTEGER NOT NULL DEFAULT 0 CHECK(stock_deducted>=0), FOREIGN KEY(schedule_id) REFERENCES schedules_new(id) ON DELETE CASCADE, UNIQUE(schedule_id,dose_date))",
+        )
+        db.execSQL(
+            "INSERT INTO intake_logs_new(id,schedule_id,dose_date,status,logged_at,stock_deducted) SELECT id,schedule_id,dose_date,status,logged_at,stock_deducted FROM intake_logs",
+        )
+        db.execSQL("DROP TABLE intake_logs")
+        db.execSQL("DROP TABLE schedules")
+        db.execSQL("ALTER TABLE schedules_new RENAME TO schedules")
+        db.execSQL("ALTER TABLE intake_logs_new RENAME TO intake_logs")
+        preserveSequence(db, "schedules", scheduleSequence)
+        preserveSequence(db, "intake_logs", logSequence)
+    }
+
+    private fun sequence(db: SQLiteDatabase, table: String): Long =
+        db.rawQuery("SELECT seq FROM sqlite_sequence WHERE name=?", arrayOf(table)).use {
+            if (it.moveToFirst()) it.getLong(0) else 0L
+        }
+
+    private fun preserveSequence(db: SQLiteDatabase, table: String, previous: Long) {
+        val value = maxOf(previous, sequence(db, table))
+        val values = ContentValues().apply { put("seq", value) }
+        if (db.update("sqlite_sequence", values, "name=?", arrayOf(table)) == 0) {
+            values.put("name", table)
+            db.insertOrThrow("sqlite_sequence", null, values)
+        }
     }
 
     fun insertMedication(m: Medication, schedules: List<Schedule>): Long =
@@ -83,7 +116,7 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
             validate(db, normalized, schedules, false, now)
             require(schedules.all { it.id == -1L })
             val id = db.insertOrThrow("medications", null, values(normalized))
-            schedules.forEach { insertSchedule(db, id, normalized, it, null) }
+            schedules.forEach { insertSchedule(db, id, it) }
             id
         }
 
@@ -137,53 +170,15 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
                         lowStockNotified = previous.lowStockNotified,
                     )
             validate(db, updated, schedules, true, now)
-            val oldSchedules =
-                schedules(db, "medication_id=? AND is_current=1", arrayOf(m.id.toString()))
-                    .associateBy { it.id }
-            val suppliedIds = schedules.filter { it.id != -1L }.map { it.id }
-            require(
-                suppliedIds.distinct().size == suppliedIds.size &&
-                    suppliedIds.all { it in oldSchedules },
-            )
-            val allChanged =
-                previous.startDate != updated.startDate ||
-                    previous.endDate != updated.endDate ||
-                    previous.isActive != updated.isActive
-            val keepIds =
-                schedules
-                    .filter { desired ->
-                        val old = oldSchedules[desired.id]
-                        !allChanged &&
-                            old != null &&
-                            old.timeOfDay == desired.timeOfDay &&
-                            old.daysOfWeek == desired.daysOfWeek
-                    }
-                    .map { it.id }
-                    .toSet()
-            val cutover = now.plusMinutes(1)
-            oldSchedules.values
-                .filter { it.id !in keepIds }
-                .forEach { old ->
-                    val lower = requireNotNull(DateUtils.parseTimestamp(old.effectiveFrom))
-                    val upper =
-                        maxOf(
-                            lower,
-                            minOf(
-                                old.effectiveUntil?.let {
-                                    requireNotNull(DateUtils.parseTimestamp(it))
-                                } ?: cutover,
-                                cutover,
-                            ),
-                        )
-                    db.update(
-                        "schedules",
-                        ContentValues().apply {
-                            put("is_current", 0)
-                            put("effective_until", DateUtils.formatTimestamp(upper))
-                        },
-                        "id=?",
-                        arrayOf(old.id.toString()),
-                    )
+            val existing =
+                schedules(db, "medication_id=?", arrayOf(m.id.toString())).associateBy { it.id }
+            val ids = schedules.filter { it.id != -1L }.map { it.id }
+            require(ids.distinct().size == ids.size && ids.all { it in existing })
+            existing.keys
+                .filter { it !in ids }
+                .forEach { id ->
+                    // Cascade deletes history. The quantity already consumed is not a refund.
+                    db.delete("schedules", "id=?", arrayOf(id.toString()))
                 }
             val adjusted =
                 updated.copy(
@@ -191,9 +186,27 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
                         updated.lowStockNotified && isLow(updated, now.toLocalDate()),
                 )
             db.update("medications", values(adjusted), "id=?", arrayOf(m.id.toString()))
+            // Temporary values allow valid swaps of two retained times under the unique index.
             schedules
-                .filter { it.id !in keepIds }
-                .forEach { insertSchedule(db, m.id, adjusted, it, cutover) }
+                .filter { it.id > 0 && existing[it.id]?.timeOfDay != it.timeOfDay }
+                .forEach {
+                    db.update(
+                        "schedules",
+                        ContentValues().apply { put("time_of_day", "__editing_${it.id}") },
+                        "id=?",
+                        arrayOf(it.id.toString()),
+                    )
+                }
+            schedules.forEach { desired ->
+                if (desired.id == -1L) insertSchedule(db, m.id, desired)
+                else
+                    db.update(
+                        "schedules",
+                        scheduleValues(m.id, desired),
+                        "id=?",
+                        arrayOf(desired.id.toString()),
+                    )
+            }
             if (stockQuantityChanged)
                 db.execSQL(
                     "UPDATE intake_logs SET stock_deducted=0 WHERE schedule_id IN (SELECT id FROM schedules WHERE medication_id=?)",
@@ -206,17 +219,16 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
         write(false) { it.delete("medications", "id=?", arrayOf(id.toString())) == 1 }
 
     fun getSchedulesForMedication(medicationId: Long): List<Schedule> =
-        schedules(
-            readableDatabase,
-            "medication_id=? AND is_current=1",
-            arrayOf(medicationId.toString()),
-        )
+        schedules(readableDatabase, "medication_id=?", arrayOf(medicationId.toString()))
 
     fun getSchedule(id: Long): Schedule? = schedule(readableDatabase, id)
 
-    fun getAllSchedulesForAlarms(): List<Schedule> {
+    fun getAllSchedulesForAlarms(): List<Schedule> = snapshot { db ->
         val now = DateUtils.now()
-        return schedules(readableDatabase).filter { ScheduleTiming.next(it, now) != null }
+        val meds = medications(db).associateBy { it.id }
+        schedules(db).filter { s ->
+            meds[s.medicationId]?.let { ScheduleTiming.next(s, it, now) != null } == true
+        }
     }
 
     fun restockMedication(id: Long, quantity: Int): Boolean =
@@ -257,11 +269,11 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
             val at =
                 requireNotNull(DateUtils.parseDate(doseDate))
                     .atTime(requireNotNull(DateUtils.parseTime(s.timeOfDay)))
-            require(at <= now && ScheduleTiming.eligible(s, at))
             val m = requireNotNull(medication(db, s.medicationId))
             val old =
                 logs(db, "schedule_id=? AND dose_date=?", arrayOf(scheduleId.toString(), doseDate))
                     .firstOrNull()
+            require(old != null || (at <= now && ScheduleTiming.eligible(s, m, at)))
             if (old?.status == desired) return@write true
             var stock = m.stockQuantity
             var deducted = 0
@@ -294,18 +306,15 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
         return snapshot { db -> doses(db, date, date, now) }
     }
 
-    fun getHistoryForMedication(medicationId: Long): List<DoseItem> = snapshot { db ->
-        val now = DateUtils.now()
-        val first =
-            schedules(db, "medication_id=?", arrayOf(medicationId.toString()))
-                .mapNotNull { DateUtils.parseTimestamp(it.effectiveFrom)?.toLocalDate() }
-                .minOrNull() ?: now.toLocalDate()
-        historyOrder(
-            doses(db, first, now.toLocalDate(), now, medicationId).filter {
-                it.status != DoseStatus.UPCOMING
-            },
-        )
-    }
+    fun getHistoryForMedication(medicationId: Long): List<IntakeLog> =
+        readableDatabase
+            .rawQuery(
+                "SELECT l.* FROM intake_logs l JOIN schedules s ON s.id=l.schedule_id WHERE s.medication_id=? ORDER BY l.dose_date DESC,s.time_of_day DESC,l.id DESC",
+                arrayOf(medicationId.toString()),
+            )
+            .use { c ->
+                buildList { while (c.moveToNext()) add(readLog(c)) }
+            }
 
     fun getMissedDoses(fromDate: String, today: String, nowTime: String): List<DoseItem> =
         snapshot { db ->
@@ -322,9 +331,17 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
             val end = requireNotNull(DateUtils.parseDate(today))
             val items =
                 doses(db, first, end, end.atTime(requireNotNull(DateUtils.parseTime(nowTime))))
+            val cutoff =
+                DateUtils.formatTimestamp(end.atTime(requireNotNull(DateUtils.parseTime(nowTime))))
+            val recorded =
+                logs(
+                    db,
+                    "dose_date BETWEEN ? AND ? AND logged_at<=?",
+                    arrayOf(DateUtils.formatDate(first), today, cutoff),
+                )
             AdherenceSummary(
-                items.count { it.status == DoseStatus.TAKEN },
-                items.count { it.status == DoseStatus.SKIPPED },
+                recorded.count { it.status == IntakeStatus.TAKEN },
+                recorded.count { it.status == IntakeStatus.SKIPPED },
                 items.count { it.status == DoseStatus.MISSED },
             )
         }
@@ -340,7 +357,7 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
             medications(db)
                 .filter { medicationId == null || it.id == medicationId }
                 .associateBy { it.id }
-        val versions =
+        val currentSchedules =
             db.rawQuery(
                     "SELECT s.* FROM schedules s JOIN medications m ON m.id=s.medication_id ORDER BY s.time_of_day, m.name COLLATE NOCASE, s.id",
                     null,
@@ -357,10 +374,10 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
             var date = first
             while (date <= last) {
                 val dateText = DateUtils.formatDate(date)
-                for (s in versions) {
+                for (s in currentSchedules) {
                     val m = meds[s.medicationId] ?: continue
                     val at = date.atTime(requireNotNull(DateUtils.parseTime(s.timeOfDay)))
-                    if (!ScheduleTiming.eligible(s, at)) continue
+                    if (!ScheduleTiming.eligible(s, m, at)) continue
                     val status =
                         recorded[s.id to dateText]?.let { DoseStatus.valueOf(it.status.name) }
                             ?: if (at > now) DoseStatus.UPCOMING else DoseStatus.MISSED
@@ -442,34 +459,15 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
         )
     }
 
-    private fun insertSchedule(
-        db: SQLiteDatabase,
-        medId: Long,
-        m: Medication,
-        s: Schedule,
-        cutover: LocalDateTime?,
-    ) {
-        val lower =
-            maxOf(
-                requireNotNull(DateUtils.parseDate(m.startDate)).atStartOfDay(),
-                cutover ?: LocalDateTime.MIN,
-            )
-        var upper =
-            m.endDate?.let { requireNotNull(DateUtils.parseDate(it)).plusDays(1).atStartOfDay() }
-        if (upper != null && upper < lower) upper = lower
-        if (!m.isActive) upper = lower
-        db.insertOrThrow(
-            "schedules",
-            null,
-            ContentValues().apply {
-                put("medication_id", medId)
-                put("time_of_day", s.timeOfDay)
-                put("days_of_week", s.daysOfWeek.sorted().joinToString(","))
-                put("effective_from", DateUtils.formatTimestamp(lower))
-                put("effective_until", upper?.let(DateUtils::formatTimestamp))
-                put("is_current", 1)
-            },
-        )
+    private fun scheduleValues(medId: Long, s: Schedule) =
+        ContentValues().apply {
+            put("medication_id", medId)
+            put("time_of_day", s.timeOfDay)
+            put("days_of_week", s.daysOfWeek.sorted().joinToString(","))
+        }
+
+    private fun insertSchedule(db: SQLiteDatabase, medId: Long, s: Schedule) {
+        db.insertOrThrow("schedules", null, scheduleValues(medId, s))
     }
 
     private fun values(m: Medication) =
@@ -548,9 +546,6 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
             c.long("medication_id"),
             c.text("time_of_day"),
             c.text("days_of_week").split(',').map(String::toInt).toSet(),
-            c.text("effective_from"),
-            c.optionalText("effective_until"),
-            c.int("is_current") == 1,
         )
 
     private fun readLog(c: Cursor) =
@@ -586,7 +581,7 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
 
     companion object {
         const val DATABASE_NAME = "medimind.db"
-        const val DATABASE_VERSION = 3
+        const val DATABASE_VERSION = 4
         @Volatile private var instance: DatabaseHelper? = null
 
         fun getInstance(context: Context): DatabaseHelper =
@@ -609,19 +604,13 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
     low_stock_threshold INTEGER NOT NULL DEFAULT 5 CHECK (low_stock_threshold >= 0),
     low_stock_notified INTEGER NOT NULL DEFAULT 0 CHECK (low_stock_notified IN (0, 1))
 );
-
 CREATE TABLE schedules (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     medication_id INTEGER NOT NULL,
     time_of_day TEXT NOT NULL,
     days_of_week TEXT NOT NULL,
-    effective_from TEXT NOT NULL,
-    effective_until TEXT,
-    is_current INTEGER NOT NULL DEFAULT 1 CHECK (is_current IN (0, 1)),
-    FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE CASCADE,
-    CHECK (effective_until IS NULL OR effective_until >= effective_from)
+    FOREIGN KEY (medication_id) REFERENCES medications(id) ON DELETE CASCADE
 );
-
 CREATE TABLE intake_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     schedule_id INTEGER NOT NULL,
@@ -632,9 +621,7 @@ CREATE TABLE intake_logs (
     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
     UNIQUE (schedule_id, dose_date)
 );
-
-CREATE UNIQUE INDEX idx_schedules_current_time
-    ON schedules(medication_id, time_of_day) WHERE is_current = 1;
+CREATE UNIQUE INDEX idx_schedules_medication_time ON schedules(medication_id, time_of_day);
 CREATE INDEX idx_schedules_medication ON schedules(medication_id);
 CREATE INDEX idx_logs_date ON intake_logs(dose_date);"""
     }

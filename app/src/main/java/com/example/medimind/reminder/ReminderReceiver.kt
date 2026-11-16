@@ -13,7 +13,12 @@ class ReminderReceiver : BroadcastReceiver() {
                 val id = intent.getLongExtra(Extras.SCHEDULE_ID, -1L)
                 val date = intent.getStringExtra(Extras.DOSE_DATE)
                 if (id > 0 && date != null)
-                    ReminderScheduler.deliverDose(context.applicationContext, id, date)
+                    ReminderScheduler.deliverDose(
+                        context.applicationContext,
+                        id,
+                        date,
+                        intent.getStringExtra(ReminderScheduler.ALARM_TIME),
+                    )
             } finally {
                 try {
                     ReminderScheduler.rescheduleAll(context.applicationContext)

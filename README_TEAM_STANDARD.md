@@ -6,7 +6,7 @@
 
 **Supplementary implementation agreement:** [docs/TEAM_STANDARD.md](docs/TEAM_STANDARD.md), version 1.2, November 16, 2026 (Asia/Manila).
 
-David's implementation and remaining screen work are described in [the integration guide](docs/DAVID_IMPLEMENTATION.md).
+Implementation status and remaining screen work are described in [the integration guide](docs/IMPLEMENTATION_GUIDE.md).
 
 This guide supplements the original README.md, which is preserved unchanged. The project proposal governs the app's scope, five screens, original tables, navigation, and report display. Our agreement supplies shared Kotlin interfaces and resolves implementation details; it does not override the proposal.
 

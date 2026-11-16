@@ -64,12 +64,20 @@ class ReminderIntegrationTest {
             ),
         )
 
+    private fun awaitNotifications(expected: Int, tag: String? = null) {
+        val deadline = android.os.SystemClock.uptimeMillis() + 3000
+        fun count() = nm.activeNotifications.count { tag == null || it.tag == tag }
+        while (count() != expected && android.os.SystemClock.uptimeMillis() < deadline) Thread
+            .sleep(20)
+        assertEquals(expected, count())
+    }
+
     @Test
     fun stockPostsOnceThenRearmsOnlyAfterSupplyRisesAboveThreshold() {
         val id = add(5)
         assertEquals(ReminderState.READY, ReminderScheduler.checkLowStock(c, id))
         assertTrue(requireNotNull(db.getMedication(id)).lowStockNotified)
-        assertEquals(1, nm.activeNotifications.count { it.tag == "stock:$id" })
+        awaitNotifications(1, "stock:$id")
         nm.cancel("stock:$id", 0)
         ReminderScheduler.checkLowStock(c, id)
         assertEquals(0, nm.activeNotifications.size)
@@ -78,7 +86,7 @@ class ReminderIntegrationTest {
         assertFalse(requireNotNull(db.getMedication(id)).lowStockNotified)
         db.saveIntake(db.getSchedulesForMedication(id).first().id, "2026-11-16", "TAKEN")
         ReminderScheduler.checkLowStock(c, id)
-        assertEquals(1, nm.activeNotifications.count { it.tag == "stock:$id" })
+        awaitNotifications(1, "stock:$id")
         db.deleteMedication(id)
         ReminderScheduler.checkLowStock(c, id)
         assertEquals(0, nm.activeNotifications.size)
@@ -91,7 +99,7 @@ class ReminderIntegrationTest {
         ReminderScheduler.deliverDose(c, sid, "2026-11-15")
         assertEquals(0, nm.activeNotifications.size)
         ReminderScheduler.deliverDose(c, sid, "2026-11-16")
-        assertEquals(1, nm.activeNotifications.size)
+        awaitNotifications(1)
         assertTrue(db.saveIntake(sid, "2026-11-16", "TAKEN"))
         ReminderScheduler.cancelDoseNotification(c, sid, "2026-11-16")
         ReminderScheduler.deliverDose(c, sid, "2026-11-16")
@@ -117,5 +125,22 @@ class ReminderIntegrationTest {
         assertTrue(db.deleteMedication(id))
         ReminderScheduler.rescheduleAll(c)
         assertTrue(registry.getStringSet("alarm_ids", emptySet()).orEmpty().isEmpty())
+    }
+
+    @Test
+    fun queuedAlarmForEditedTimeDoesNotNotifyForItsReplacement() {
+        val id = add()
+        val original = db.getSchedulesForMedication(id)
+        val sid = original.first().id
+        assertTrue(
+            db.updateMedication(
+                requireNotNull(db.getMedication(id)),
+                listOf(original.first().copy(timeOfDay = "09:00"), original.last()),
+            ),
+        )
+        ReminderScheduler.deliverDose(c, sid, "2026-11-16", "08:00")
+        assertEquals(0, nm.activeNotifications.size)
+        ReminderScheduler.deliverDose(c, sid, "2026-11-16", "09:00")
+        awaitNotifications(1)
     }
 }

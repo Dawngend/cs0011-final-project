@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="@dimen/screen_padding">
-    <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/title_today" android:textColor="@color/text_primary" android:textSize="@dimen/text_title" android:textStyle="bold" />
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-        <Button android:id="@+id/medications" android:layout_width="0dp" android:layout_weight="1" android:layout_height="@dimen/touch_target" android:text="@string/action_medications" />
-        <Button android:id="@+id/report" android:layout_width="0dp" android:layout_weight="1" android:layout_height="@dimen/touch_target" android:text="@string/action_report" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <TextView android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/title_today" android:textColor="@color/text_primary" android:textSize="@dimen/text_title" android:textStyle="bold" />
+        <ImageButton android:id="@+id/more" android:layout_width="@dimen/touch_target" android:layout_height="@dimen/touch_target" android:src="@drawable/ic_more_vert" android:contentDescription="@string/action_more_options" android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
     <TextView android:id="@+id/reminderWarning" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/warning" android:textSize="@dimen/text_caption" android:accessibilityLiveRegion="polite" android:visibility="gone" />
     <Button android:id="@+id/reminderSettings" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" android:text="@string/action_settings" android:visibility="gone" />

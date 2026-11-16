@@ -12,7 +12,6 @@ import com.example.medimind.model.*
 
 class DoseAdapter(
     private val onAction: (DoseItem, IntakeStatus) -> Unit,
-    private val onChange: (DoseItem) -> Unit,
 ) : ListAdapter<DoseItem, DoseAdapter.Holder>(Diff) {
     var highlighted: Pair<Long, String>? = null
     var busy = false
@@ -37,14 +36,11 @@ class DoseAdapter(
                     DoseStatus.UPCOMING -> R.string.status_upcoming
                 }
             b.status.setText(statusText)
-            b.actions.isVisible = d.status == DoseStatus.MISSED
-            b.change.isVisible = d.status == DoseStatus.TAKEN || d.status == DoseStatus.SKIPPED
+            b.actions.isVisible = d.status != DoseStatus.UPCOMING
             b.taken.isEnabled = !busy
             b.skip.isEnabled = !busy
-            b.change.isEnabled = !busy
             b.taken.setOnClickListener { onAction(d, IntakeStatus.TAKEN) }
             b.skip.setOnClickListener { onAction(d, IntakeStatus.SKIPPED) }
-            b.change.setOnClickListener { onChange(d) }
             b.card.setBackgroundColor(
                 c.getColor(
                     if (highlighted == (d.scheduleId to d.doseDate)) R.color.highlight

@@ -1,0 +1,4 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_medications" android:title="@string/action_medications" />
+    <item android:id="@+id/menu_report" android:title="@string/action_report" />
+</menu>

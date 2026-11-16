@@ -28,31 +28,21 @@ class UtilityTest {
     }
 
     @Test
-    fun intervalUpperBoundIsExclusiveAndFarFutureStartIsFound() {
-        val s =
-            Schedule(
-                timeOfDay = "08:00",
-                daysOfWeek = setOf(1),
-                effectiveFrom = "2027-02-01 00:00",
-                effectiveUntil = "2027-02-01 08:01",
+    fun currentMedicineDatesAndWeekdaysDefineAlarmEligibility() {
+        val m =
+            Medication(
+                name = "Demo",
+                dose = "500 mg",
+                startDate = "2027-02-01",
+                endDate = "2027-02-01",
             )
-        assertEquals(
-            LocalDateTime.parse("2027-02-01T08:00"),
-            ScheduleTiming.next(s, LocalDateTime.parse("2026-11-16T08:00")),
-        )
-        assertTrue(ScheduleTiming.eligible(s, LocalDateTime.parse("2027-02-01T08:00")))
-        assertFalse(
-            ScheduleTiming.eligible(
-                s.copy(effectiveUntil = "2027-02-01 08:00"),
-                LocalDateTime.parse("2027-02-01T08:00"),
-            ),
-        )
-        assertNull(
-            ScheduleTiming.next(
-                s.copy(effectiveUntil = s.effectiveFrom),
-                LocalDateTime.parse("2026-11-16T08:00"),
-            ),
-        )
+        val schedule = Schedule(timeOfDay = "08:00", daysOfWeek = setOf(1))
+        val at = LocalDateTime.parse("2027-02-01T08:00")
+        assertEquals(at, ScheduleTiming.next(schedule, m, LocalDateTime.parse("2026-11-16T08:00")))
+        assertTrue(ScheduleTiming.eligible(schedule, m, at))
+        assertFalse(ScheduleTiming.eligible(schedule, m.copy(isActive = false), at))
+        assertNull(ScheduleTiming.next(schedule, m, at))
+        assertFalse(ScheduleTiming.eligible(schedule, m.copy(startDate = "2027-02-02"), at))
     }
 
     @Test

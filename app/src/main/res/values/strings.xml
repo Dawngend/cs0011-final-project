@@ -57,15 +57,13 @@
     <string name="confirm_discard_title">Discard changes?</string>
     <string name="confirm_discard_body">Your changes will not be saved.</string>
     <string name="confirm_remove_time_title">Remove this time?</string>
-    <string name="confirm_remove_time_body">Future reminders for this time will stop from the next minute. Past intake history will be kept.</string>
+    <string name="confirm_remove_time_body">The history for this time will be deleted.</string>
     <string name="confirm_passed_title">Time already passed</string>
     <string name="confirm_passed_body">%1$s has already passed today. It will show as not recorded unless you mark it.</string>
-    <string name="schedule_change_note">Schedule changes apply from the next minute. Earlier doses and history stay unchanged.</string>
     <string name="title_today">Today</string>
     <string name="today_date">Today, %1$s</string>
     <string name="action_taken">Taken</string>
     <string name="action_skip">Skip</string>
-    <string name="action_change">Change</string>
     <string name="action_retry">Retry</string>
     <string name="action_medications">Medications</string>
     <string name="action_report">Report</string>
@@ -84,4 +82,5 @@
     <string name="dose_notification_body">%1$s. %2$s</string>
     <string name="error_open_screen">Could not open this screen. Please try again.</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_more_options">More options</string>
 </resources>

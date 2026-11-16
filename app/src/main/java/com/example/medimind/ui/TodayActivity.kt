@@ -9,8 +9,8 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -60,23 +60,23 @@ class TodayActivity : AppCompatActivity() {
             )
             insets
         }
-        adapter =
-            DoseAdapter(::record) { dose ->
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.action_change)
-                    .setItems(
-                        arrayOf(getString(R.string.action_taken), getString(R.string.action_skip)),
-                    ) { _, which ->
-                        record(dose, if (which == 0) IntakeStatus.TAKEN else IntakeStatus.SKIPPED)
-                    }
-                    .setNegativeButton(R.string.action_cancel, null)
-                    .show()
-            }
+        adapter = DoseAdapter(::record)
         b.doses.layoutManager = LinearLayoutManager(this)
         b.doses.adapter = adapter
         b.retry.setOnClickListener { loadDoses() }
-        b.medications.setOnClickListener { openScreen("MedicationsActivity") }
-        b.report.setOnClickListener { openScreen("ReportActivity") }
+        b.more.setOnClickListener {
+            PopupMenu(this, b.more).apply {
+                menuInflater.inflate(R.menu.today_menu, menu)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.menu_medications -> openScreen("MedicationsActivity")
+                        R.id.menu_report -> openScreen("ReportActivity")
+                    }
+                    true
+                }
+                show()
+            }
+        }
         b.reminderSettings.setOnClickListener { openReminderSettings() }
         readHighlight(intent)
     }

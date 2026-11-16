@@ -30,6 +30,7 @@ enum class ReminderState {
 object ReminderScheduler {
     private const val CHANNEL = "medication_reminders"
     private const val TAG = "MediMindReminders"
+    internal const val ALARM_TIME = "alarm_time"
     private val lock = Any()
     internal val worker = Executors.newSingleThreadExecutor()
 
@@ -90,8 +91,10 @@ object ReminderScheduler {
                 val now = DateUtils.now()
                 var exact = exactAllowed(c)
                 for (s in schedules) {
-                    val next = ScheduleTiming.next(s, now) ?: continue
-                    val pending = alarmIntent(c, s.id, DateUtils.formatDate(next.toLocalDate()))
+                    val medicine = db.getMedication(s.medicationId) ?: continue
+                    val next = ScheduleTiming.next(s, medicine, now) ?: continue
+                    val pending =
+                        alarmIntent(c, s.id, DateUtils.formatDate(next.toLocalDate()), s.timeOfDay)
                     val millis = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                     if (exact) {
                         try {
@@ -117,12 +120,18 @@ object ReminderScheduler {
             }
         }
 
-    private fun alarmIntent(c: Context, id: Long, date: String?): PendingIntent {
+    private fun alarmIntent(
+        c: Context,
+        id: Long,
+        date: String?,
+        time: String? = null,
+    ): PendingIntent {
         val intent =
             Intent(c, ReminderReceiver::class.java)
                 .setData(Uri.parse("medimind://reminder/$id"))
                 .putExtra(Extras.SCHEDULE_ID, id)
         if (date != null) intent.putExtra(Extras.DOSE_DATE, date)
+        if (time != null) intent.putExtra(ALARM_TIME, time)
         return PendingIntent.getBroadcast(
             c,
             0,
@@ -137,15 +146,22 @@ object ReminderScheduler {
         }
 
     @SuppressLint("MissingPermission")
-    internal fun deliverDose(context: Context, id: Long, date: String) =
+    internal fun deliverDose(
+        context: Context,
+        id: Long,
+        date: String,
+        expectedTime: String? = null,
+    ) =
         synchronized(lock) {
             try {
                 val now = DateUtils.now()
                 if (date != DateUtils.formatDate(now.toLocalDate())) return@synchronized
                 val db = DatabaseHelper.getInstance(context)
                 val s = db.getSchedule(id) ?: return@synchronized
+                if (expectedTime != null && s.timeOfDay != expectedTime) return@synchronized
+                val medicine = db.getMedication(s.medicationId) ?: return@synchronized
                 val at = now.toLocalDate().atTime(requireNotNull(DateUtils.parseTime(s.timeOfDay)))
-                if (at > now || !ScheduleTiming.eligible(s, at)) return@synchronized
+                if (at > now || !ScheduleTiming.eligible(s, medicine, at)) return@synchronized
                 val dose =
                     db.getTodayDoses(date, now.dayOfWeek.value).find { it.scheduleId == id }
                         ?: return@synchronized
