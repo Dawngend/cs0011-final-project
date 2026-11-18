@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -28,6 +26,7 @@ class MedicationsActivity : AppCompatActivity() {
     private val db by lazy { DatabaseHelper.getInstance(this) }
     private lateinit var adapter: MedicationAdapter
     private var loadJob: Job? = null
+    private var filter = MedFilter.ALL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,11 +50,10 @@ class MedicationsActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
         })
-        b.filter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listOf("All", "Active", "Finished"))
-        b.filter.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) = loadMedications()
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
-        }
+        b.filterAll.setOnClickListener { selectFilter(MedFilter.ALL) }
+        b.filterActive.setOnClickListener { selectFilter(MedFilter.ACTIVE) }
+        b.filterDone.setOnClickListener { selectFilter(MedFilter.DONE) }
+        renderFilter()
     }
 
     override fun onResume() {
@@ -68,12 +66,12 @@ class MedicationsActivity : AppCompatActivity() {
         loadJob = lifecycleScope.launch {
             b.loading.isVisible = true
             try {
-                val items = withContext(Dispatchers.IO) { db.getAllMedications(b.search.text.toString(), selectedFilter()) }
+                val items = withContext(Dispatchers.IO) { db.getAllMedications(b.search.text.toString(), filter) }
                 adapter.submitList(items)
                 b.empty.text = when {
                     items.isNotEmpty() -> ""
                     b.search.text.toString().trim().isNotEmpty() -> getString(R.string.empty_search, b.search.text.toString().trim())
-                    b.filter.selectedItemPosition != 0 -> getString(R.string.empty_filter)
+                    filter != MedFilter.ALL -> getString(R.string.empty_filter)
                     else -> getString(R.string.empty_medications)
                 }
                 b.empty.isVisible = items.isEmpty()
@@ -83,10 +81,17 @@ class MedicationsActivity : AppCompatActivity() {
         }
     }
 
-    private fun selectedFilter() = when (b.filter.selectedItemPosition) {
-        1 -> MedFilter.ACTIVE
-        2 -> MedFilter.DONE
-        else -> MedFilter.ALL
+    private fun selectFilter(value: MedFilter) {
+        if (filter == value) return
+        filter = value
+        renderFilter()
+        loadMedications()
+    }
+
+    private fun renderFilter() {
+        b.filterAll.isSelected = filter == MedFilter.ALL
+        b.filterActive.isSelected = filter == MedFilter.ACTIVE
+        b.filterDone.isSelected = filter == MedFilter.DONE
     }
 
     private fun openMedication(m: Medication) = startActivity(Intent(this, MedicationDetailActivity::class.java).putExtra(Extras.MEDICATION_ID, m.id))

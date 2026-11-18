@@ -36,16 +36,26 @@ class DoseAdapter(
                     DoseStatus.UPCOMING -> R.string.status_upcoming
                 }
             b.status.setText(statusText)
+            val (pillDrawable, pillColor) =
+                when (d.status) {
+                    DoseStatus.TAKEN -> R.drawable.bg_pill_success to R.color.success
+                    DoseStatus.SKIPPED -> R.drawable.bg_pill to R.color.text_secondary
+                    DoseStatus.MISSED -> R.drawable.bg_pill_warning to R.color.warning
+                    DoseStatus.UPCOMING -> R.drawable.bg_pill_primary to R.color.on_primary_container
+                }
+            b.status.setBackgroundResource(pillDrawable)
+            b.status.setTextColor(c.getColor(pillColor))
             b.actions.isVisible = d.status != DoseStatus.UPCOMING
             b.taken.isEnabled = !busy
             b.skip.isEnabled = !busy
             b.taken.setOnClickListener { onAction(d, IntakeStatus.TAKEN) }
             b.skip.setOnClickListener { onAction(d, IntakeStatus.SKIPPED) }
-            b.card.setBackgroundColor(
-                c.getColor(
-                    if (highlighted == (d.scheduleId to d.doseDate)) R.color.highlight
-                    else R.color.card,
-                ),
+            b.card.setBackgroundResource(
+                if (highlighted == (d.scheduleId to d.doseDate)) {
+                    R.drawable.bg_card_highlight
+                } else {
+                    R.drawable.bg_card
+                },
             )
         }
     }

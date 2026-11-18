@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.MediMind" parent="Theme.MediMind.Base">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+    </style>
+</resources>

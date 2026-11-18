@@ -1,7 +1,57 @@
 <resources>
-    <style name="Theme.MediMind" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/primary</item><item name="colorOnPrimary">@color/on_primary</item>
-        <item name="android:fontFamily">sans</item><item name="android:windowLightStatusBar">true</item>
+    <style name="Theme.MediMind.Base" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryVariant">@color/on_primary_container</item>
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorOnSecondary">@color/on_primary</item>
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorError">@color/error</item>
+
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:colorBackground">@color/surface</item>
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:navigationBarColor">@color/nav_bar</item>
+        <item name="android:timePickerDialogTheme">@style/ThemeOverlay.MediMind.Picker</item>
+        <item name="android:datePickerDialogTheme">@style/ThemeOverlay.MediMind.Picker</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MediMind.Dialog</item>
+    </style>
+
+    <style name="Theme.MediMind" parent="Theme.MediMind.Base">
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="ThemeOverlay.MediMind.Picker" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/on_primary_container</item>
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorAccent">@color/primary</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:colorBackground">@color/card</item>
+        <item name="android:colorBackgroundFloating">@color/card</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+    </style>
+
+    <style name="ThemeOverlay.MediMind.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MediMind.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.MediMind.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
     </style>
 </resources>

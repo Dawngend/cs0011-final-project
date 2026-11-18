@@ -4,8 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.medimind.R
@@ -14,6 +15,7 @@ import com.example.medimind.db.DatabaseHelper
 import com.example.medimind.model.Medication
 import com.example.medimind.reminder.ReminderScheduler
 import com.example.medimind.util.Extras
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +29,16 @@ class MedicationDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         b = ActivityMedicationDetailBinding.inflate(layoutInflater)
         setContentView(b.root)
+        val left = b.root.paddingLeft
+        val top = b.root.paddingTop
+        val right = b.root.paddingRight
+        val bottom = b.root.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(b.root) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            view.setPadding(left + bars.left, top + bars.top, right + bars.right, bottom + bars.bottom)
+            insets
+        }
+        b.back.setOnClickListener { finish() }
         b.edit.setOnClickListener { startActivity(Intent(this, MedicationFormActivity::class.java).putExtra(Extras.MEDICATION_ID, medication?.id ?: -1L)) }
         b.delete.setOnClickListener { confirmDelete() }
         b.refill.setOnClickListener { refill() }
@@ -44,19 +56,28 @@ class MedicationDetailActivity : AppCompatActivity() {
             medication = data.first.first
             val m = medication
             if (m == null) { toast(R.string.error_not_found); finish(); return@launch }
-            b.title.text = "${m.name} ${m.dose}"
+            b.title.text = getString(R.string.dose_heading, m.name, m.dose)
             val scheduleText = data.first.second.joinToString(", ") { it.timeOfDay }
-            b.details.text = listOfNotNull(m.instructions, "Schedule: $scheduleText", "Dates: ${m.startDate} to ${m.endDate ?: "ongoing"}").joinToString("\n")
+            b.details.text = listOfNotNull(
+                m.instructions,
+                getString(R.string.detail_schedule, scheduleText),
+                getString(R.string.detail_dates, m.startDate, m.endDate ?: getString(R.string.detail_ongoing)),
+            ).joinToString("\n")
             b.stock.isVisible = m.stockQuantity != null
             b.refill.isVisible = m.stockQuantity != null
-            b.stock.text = if (m.stockQuantity != null && m.stockQuantity <= m.lowStockThreshold) "Low stock: ${m.stockQuantity} units (threshold ${m.lowStockThreshold})" else "Stock: ${m.stockQuantity ?: 0} units"
+            val quantity = m.stockQuantity
+            b.stock.text = when {
+                quantity == null -> ""
+                quantity <= m.lowStockThreshold -> getString(R.string.detail_stock_low, quantity, m.lowStockThreshold)
+                else -> getString(R.string.detail_stock_units, quantity)
+            }
             b.history.text = data.second.joinToString("\n") { "${it.doseDate} — ${it.status.name.lowercase().replaceFirstChar { character -> character.uppercase() }}" }.ifBlank { getString(R.string.empty_history) }
         }
     }
 
     private fun confirmDelete() {
         val m = medication ?: return
-        AlertDialog.Builder(this).setTitle(R.string.confirm_delete_title).setMessage(R.string.confirm_delete_body).setNegativeButton(R.string.action_cancel, null).setPositiveButton("Delete") { _, _ ->
+        MaterialAlertDialogBuilder(this).setTitle(R.string.confirm_delete_title).setMessage(R.string.confirm_delete_body).setNegativeButton(R.string.action_cancel, null).setPositiveButton(R.string.action_delete) { _, _ ->
             lifecycleScope.launch {
                 val deleted = withContext(Dispatchers.IO) { db.deleteMedication(m.id) }
                 if (deleted) { ReminderScheduler.rescheduleAll(this@MedicationDetailActivity); toast(getString(R.string.medicine_deleted, m.name)); finish() } else toast(R.string.error_delete)
@@ -65,8 +86,8 @@ class MedicationDetailActivity : AppCompatActivity() {
     }
 
     private fun refill() {
-        val input = EditText(this).apply { hint = "Whole units"; inputType = android.text.InputType.TYPE_CLASS_NUMBER }
-        AlertDialog.Builder(this).setTitle("Add refill").setView(input).setNegativeButton(R.string.action_cancel, null).setPositiveButton("Add") { _, _ ->
+        val input = EditText(this).apply { hint = getString(R.string.hint_refill_units); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
+        MaterialAlertDialogBuilder(this).setTitle(R.string.action_add_refill).setView(input).setNegativeButton(R.string.action_cancel, null).setPositiveButton(R.string.action_add) { _, _ ->
             val amount = input.text.toString().toIntOrNull()
             val id = medication?.id ?: return@setPositiveButton
             lifecycleScope.launch {

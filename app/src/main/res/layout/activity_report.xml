@@ -1,13 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="@dimen/screen_padding">
-    <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Report" android:textColor="@color/text_primary" android:textSize="@dimen/text_title" android:textStyle="bold" />
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:id="@+id/sevenDays" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Last 7 days" />
-        <Button android:id="@+id/thirtyDays" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Last 30 days" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/screen_padding">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/back"
+            style="@style/Widget.MediMind.IconButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:contentDescription="@string/action_back"
+            android:src="@drawable/ic_arrow_back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/eyebrow_report"
+                android:textAppearance="@style/TextAppearance.MediMind.Section" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/action_report"
+                android:textAppearance="@style/TextAppearance.MediMind.Title"
+                android:textSize="24sp" />
+        </LinearLayout>
     </LinearLayout>
-    <ProgressBar android:id="@+id/loading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:visibility="gone" />
-    <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_primary" android:textSize="@dimen/text_body" android:paddingTop="@dimen/space_medium" />
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Missed doses" android:textColor="@color/text_primary" android:textStyle="bold" android:paddingTop="@dimen/space_medium" />
-    <TextView android:id="@+id/missed" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:textColor="@color/text_secondary" android:textSize="@dimen/text_body" android:paddingTop="@dimen/space_small" />
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="MediMind is a reminder tool. It does not give medical advice." android:textColor="@color/text_secondary" android:textSize="@dimen/text_caption" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_large"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/sevenDays"
+            style="@style/Widget.MediMind.Button.Segment"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="@string/period_seven_days" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/thirtyDays"
+            style="@style/Widget.MediMind.Button.Segment"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="@dimen/space_small"
+            android:layout_weight="1"
+            android:text="@string/period_thirty_days" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textAppearance="@style/TextAppearance.MediMind.Caption" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_medium"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/takenValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.MediMind.Stat"
+                android:textColor="@color/success" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/report_taken"
+                android:textAppearance="@style/TextAppearance.MediMind.Section"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_small"
+            android:layout_weight="1"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/missedValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.MediMind.Stat"
+                android:textColor="@color/warning" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/report_missed"
+                android:textAppearance="@style/TextAppearance.MediMind.Section"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_small"
+            android:layout_weight="1"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/skippedValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.MediMind.Stat"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/report_skipped"
+                android:textAppearance="@style/TextAppearance.MediMind.Section"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_large"
+        android:text="@string/section_missed_doses"
+        android:textAppearance="@style/TextAppearance.MediMind.Section" />
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/space_medium"
+        android:indeterminateTint="@color/primary"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/missedEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/space_medium"
+        android:text="@string/empty_missed"
+        android:textAppearance="@style/TextAppearance.MediMind.Body"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/missedList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/medical_disclaimer"
+        android:textAppearance="@style/TextAppearance.MediMind.Caption"
+        android:textSize="12sp" />
 </LinearLayout>
