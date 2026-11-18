@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.MediMind" parent="Theme.MediMind.Base">
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

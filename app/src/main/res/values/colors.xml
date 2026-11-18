@@ -1,6 +1,28 @@
 <resources>
-    <color name="primary">#166B63</color><color name="on_primary">#FFFFFF</color>
-    <color name="surface">#F5F8F7</color><color name="text_primary">#172B29</color>
-    <color name="text_secondary">#425E58</color><color name="warning">#804600</color>
-    <color name="highlight">#D7F1E9</color><color name="card">#FFFFFF</color>
+    <!-- Brand -->
+    <color name="primary">#1F5C53</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#DCEBE4</color>
+    <color name="on_primary_container">#10322C</color>
+
+    <!-- Surfaces -->
+    <color name="surface">#F6F7F4</color>
+    <color name="nav_bar">#16211E</color>
+    <color name="surface_variant">#ECEEEA</color>
+    <color name="card">#FFFFFF</color>
+    <color name="input">#F1F3EF</color>
+    <color name="outline">#E3E7E2</color>
+    <color name="highlight">#ECF5F0</color>
+    <color name="ripple">#1F1F5C53</color>
+
+    <!-- Text -->
+    <color name="text_primary">#16211E</color>
+    <color name="text_secondary">#58655F</color>
+
+    <!-- Status -->
+    <color name="success">#2C6B4F</color>
+    <color name="success_container">#DFF0E6</color>
+    <color name="warning">#8A5A1E</color>
+    <color name="warning_container">#FBF0DF</color>
+    <color name="error">#B3261E</color>
 </resources>

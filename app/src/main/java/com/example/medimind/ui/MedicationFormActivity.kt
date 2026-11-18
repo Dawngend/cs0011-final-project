@@ -6,8 +6,9 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.medimind.R
@@ -20,8 +21,10 @@ import com.example.medimind.util.DateUtils
 import com.example.medimind.util.Extras
 import com.example.medimind.util.ValidationField
 import com.example.medimind.util.Validator
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +40,17 @@ class MedicationFormActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         b = ActivityMedicationFormBinding.inflate(layoutInflater)
         setContentView(b.root)
-        b.title.text = if (medicationId() > 0) "Edit medication" else "Add medication"
+        val left = b.root.paddingLeft
+        val top = b.root.paddingTop
+        val right = b.root.paddingRight
+        val bottom = b.root.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(b.root) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            view.setPadding(left + bars.left, top + bars.top, right + bars.right, bottom + bars.bottom)
+            insets
+        }
+        b.title.text = getString(if (medicationId() > 0) R.string.eyebrow_edit_medication else R.string.eyebrow_new_medication)
+        b.back.setOnClickListener { confirmCancel() }
         b.startDate.setOnClickListener { pickDate(b.startDate, b.startDate.text.toString().ifBlank { today() }) }
         b.endDate.setOnClickListener { pickDate(b.endDate, b.endDate.text.toString().ifBlank { b.startDate.text.toString().ifBlank { today() } }) }
         b.addTime.setOnClickListener { pickTime() }
@@ -70,9 +83,9 @@ class MedicationFormActivity : AppCompatActivity() {
             val days = schedules.firstOrNull()?.daysOfWeek.orEmpty()
             dayBoxes().forEachIndexed { index, box -> box.isChecked = index + 1 in days }
             b.stockTracking.isChecked = m.stockQuantity != null
-            b.stockQuantity.setText(m.stockQuantity?.toString().orEmpty())
-            b.unitsPerDose.setText(m.unitsPerDose.toString())
-            b.lowStockThreshold.setText(m.lowStockThreshold.toString())
+            b.stockQuantity.setText(m.stockQuantity?.let { String.format(Locale.getDefault(), "%d", it) }.orEmpty())
+            b.unitsPerDose.setText(String.format(Locale.getDefault(), "%d", m.unitsPerDose))
+            b.lowStockThreshold.setText(String.format(Locale.getDefault(), "%d", m.lowStockThreshold))
             renderTimes()
         }
     }
@@ -100,8 +113,8 @@ class MedicationFormActivity : AppCompatActivity() {
     private fun renderTimes() {
         b.times.removeAllViews()
         schedules.sortedBy { it.timeOfDay }.forEach { schedule ->
-            val row = layoutInflater.inflate(android.R.layout.simple_list_item_1, b.times, false)
-            val label = row.findViewById<TextView>(android.R.id.text1)
+            val row = layoutInflater.inflate(R.layout.item_time, b.times, false)
+            val label = row.findViewById<TextView>(R.id.time)
             label.text = schedule.timeOfDay
             row.setOnClickListener { removeTime(schedule) }
             b.times.addView(row)
@@ -109,11 +122,11 @@ class MedicationFormActivity : AppCompatActivity() {
     }
 
     private fun removeTime(schedule: Schedule) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.confirm_remove_time_title)
             .setMessage(R.string.confirm_remove_time_body)
             .setNegativeButton(R.string.action_cancel, null)
-            .setPositiveButton("Remove") { _, _ -> schedules.remove(schedule); renderTimes() }
+            .setPositiveButton(R.string.action_remove) { _, _ -> schedules.remove(schedule); renderTimes() }
             .show()
     }
 
@@ -147,7 +160,8 @@ class MedicationFormActivity : AppCompatActivity() {
         clearErrors()
         if (issues.isNotEmpty()) {
             issues.forEach { issue -> errorView(issue.field)?.setError(getString(issue.messageResId)) }
-            errorView(issues.first().field)?.requestFocus()
+            errorView(issues.firstOrNull { errorView(it.field) != null }?.field ?: ValidationField.NAME)?.requestFocus()
+            issues.firstOrNull { errorView(it.field) == null }?.let { toast(it.messageResId) }
             return
         }
         saving = true
@@ -188,11 +202,12 @@ class MedicationFormActivity : AppCompatActivity() {
         ValidationField.STOCK -> b.stockQuantity
         ValidationField.UNITS_PER_DOSE -> b.unitsPerDose
         ValidationField.LOW_STOCK_THRESHOLD -> b.lowStockThreshold
-        else -> b.name
+        ValidationField.MEDICINE -> b.name
+        ValidationField.TIMES, ValidationField.DAYS -> null
     }
 
     private fun confirmCancel() {
-        if (hasChanges()) AlertDialog.Builder(this).setTitle(R.string.confirm_discard_title).setMessage(R.string.confirm_discard_body).setNegativeButton("Keep editing", null).setPositiveButton("Discard") { _, _ -> finish() }.show()
+        if (hasChanges()) MaterialAlertDialogBuilder(this).setTitle(R.string.confirm_discard_title).setMessage(R.string.confirm_discard_body).setNegativeButton(R.string.action_keep_editing, null).setPositiveButton(R.string.action_discard) { _, _ -> finish() }.show()
         else finish()
     }
 

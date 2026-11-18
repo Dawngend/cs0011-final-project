@@ -1,6 +1,19 @@
 <resources>
-    <dimen name="screen_padding">20dp</dimen><dimen name="space_small">8dp</dimen>
-    <dimen name="space_medium">16dp</dimen><dimen name="touch_target">48dp</dimen>
-    <dimen name="text_title">24sp</dimen><dimen name="text_body">16sp</dimen>
-    <dimen name="text_caption">14sp</dimen>
+    <dimen name="screen_padding">20dp</dimen>
+    <dimen name="space_small">8dp</dimen>
+    <dimen name="space_medium">16dp</dimen>
+    <dimen name="space_large">24dp</dimen>
+    <dimen name="space_xlarge">32dp</dimen>
+
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+    <dimen name="corner_radius">20dp</dimen>
+    <dimen name="corner_radius_small">14dp</dimen>
+
+    <dimen name="text_display">30sp</dimen>
+    <dimen name="text_title">26sp</dimen>
+    <dimen name="text_headline">20sp</dimen>
+    <dimen name="text_body">15sp</dimen>
+    <dimen name="text_caption">13sp</dimen>
+    <dimen name="text_label">12sp</dimen>
 </resources>

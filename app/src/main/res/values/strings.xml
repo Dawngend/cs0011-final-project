@@ -61,7 +61,7 @@
     <string name="confirm_passed_title">Time already passed</string>
     <string name="confirm_passed_body">%1$s has already passed today. It will show as not recorded unless you mark it.</string>
     <string name="title_today">Today</string>
-    <string name="today_date">Today, %1$s</string>
+    <string name="today_date">%1$s</string>
     <string name="action_taken">Taken</string>
     <string name="action_skip">Skip</string>
     <string name="action_retry">Retry</string>
@@ -83,4 +83,79 @@
     <string name="error_open_screen">Could not open this screen. Please try again.</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_more_options">More options</string>
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_add">Add</string>
+    <string name="action_add_medication">Add medication</string>
+    <string name="action_discard">Discard</string>
+    <string name="action_keep_editing">Keep editing</string>
+    <string name="hint_refill_units">Whole units</string>
+
+    <!-- Screen chrome -->
+    <string name="action_back">Back</string>
+    <string name="eyebrow_today">Today</string>
+    <string name="eyebrow_library">Medicine cabinet</string>
+    <string name="eyebrow_report">Insights</string>
+    <string name="eyebrow_medication">Medication</string>
+    <string name="eyebrow_new_medication">New medication</string>
+    <string name="eyebrow_edit_medication">Edit medication</string>
+
+    <!-- Today -->
+    <string name="section_today_schedule">Today\'s schedule</string>
+    <string name="doses_taken_of">%1$d of %2$d doses taken</string>
+
+    <!-- Medications list -->
+    <string name="hint_search">Search medicines</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_done">Done</string>
+    <string name="medication_active">Active</string>
+    <string name="medication_finished">Finished</string>
+    <string name="stock_off">Stock tracking off</string>
+    <string name="stock_low">Low stock: %1$d units</string>
+    <string name="stock_units">Stock: %1$d units</string>
+
+    <!-- Form -->
+    <string name="hint_name">Medicine name</string>
+    <string name="hint_dose">Dose, for example 500 mg</string>
+    <string name="hint_instructions">Instructions (optional)</string>
+    <string name="hint_start_date">Start date</string>
+    <string name="hint_end_date">End date (optional)</string>
+    <string name="hint_stock_quantity">Current stock (whole units)</string>
+    <string name="hint_units_per_dose">Units per dose</string>
+    <string name="hint_low_stock_threshold">Low-stock threshold</string>
+    <string name="section_details">Details</string>
+    <string name="section_schedule">Schedule</string>
+    <string name="section_times">Dose times</string>
+    <string name="section_days">Repeat on</string>
+    <string name="day_letter_monday">M</string>
+    <string name="day_letter_tuesday">T</string>
+    <string name="day_letter_wednesday">W</string>
+    <string name="day_letter_thursday">T</string>
+    <string name="day_letter_friday">F</string>
+    <string name="day_letter_saturday">S</string>
+    <string name="day_letter_sunday">S</string>
+    <string name="section_stock">Stock</string>
+    <string name="action_add_time">Add time</string>
+    <string name="action_remove">Remove</string>
+    <string name="stock_tracking_toggle">Track stock and receive low-stock notifications</string>
+
+    <!-- Report -->
+    <string name="report_range">%1$s – %2$s</string>
+    <string name="report_taken">Taken</string>
+    <string name="report_missed">Missed</string>
+    <string name="report_skipped">Skipped</string>
+    <string name="section_missed_doses">Missed doses</string>
+    <string name="period_seven_days">7 days</string>
+    <string name="period_thirty_days">30 days</string>
+
+    <!-- Detail -->
+    <string name="section_intake_history">Intake history</string>
+    <string name="action_add_refill">Add refill</string>
+    <string name="detail_stock_low">Low stock: %1$d units (threshold %2$d)</string>
+    <string name="detail_stock_units">Stock: %1$d units</string>
+    <string name="detail_schedule">Schedule: %1$s</string>
+    <string name="detail_dates">Dates: %1$s to %2$s</string>
+    <string name="detail_ongoing">ongoing</string>
 </resources>

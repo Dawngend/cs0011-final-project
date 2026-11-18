@@ -1,14 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="@dimen/screen_padding">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
-        <TextView android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/title_today" android:textColor="@color/text_primary" android:textSize="@dimen/text_title" android:textStyle="bold" />
-        <ImageButton android:id="@+id/more" android:layout_width="@dimen/touch_target" android:layout_height="@dimen/touch_target" android:src="@drawable/ic_more_vert" android:contentDescription="@string/action_more_options" android:background="?attr/selectableItemBackgroundBorderless" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/screen_padding">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/eyebrow_today"
+                android:textAppearance="@style/TextAppearance.MediMind.Section" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/title_today"
+                android:textAppearance="@style/TextAppearance.MediMind.Display" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/more"
+            style="@style/Widget.MediMind.IconButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:layout_marginStart="@dimen/space_small"
+            android:contentDescription="@string/action_more_options"
+            android:src="@drawable/ic_more_vert" />
     </LinearLayout>
-    <TextView android:id="@+id/reminderWarning" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/warning" android:textSize="@dimen/text_caption" android:accessibilityLiveRegion="polite" android:visibility="gone" />
-    <Button android:id="@+id/reminderSettings" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" android:text="@string/action_settings" android:visibility="gone" />
-    <ProgressBar android:id="@+id/loading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" />
-    <TextView android:id="@+id/empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="@dimen/space_medium" android:text="@string/empty_today" android:textSize="@dimen/text_body" android:textColor="@color/text_primary" android:visibility="gone" />
-    <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" android:text="@string/action_retry" android:visibility="gone" />
-    <androidx.recyclerview.widget.RecyclerView android:id="@+id/doses" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:clipToPadding="false" />
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="@dimen/space_medium" android:text="@string/medical_disclaimer" android:textSize="@dimen/text_caption" android:textColor="@color/text_secondary" />
+
+    <LinearLayout
+        android:id="@+id/doseHero"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_large"
+        android:background="@drawable/bg_card"
+        android:orientation="vertical"
+        android:padding="@dimen/space_medium"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/doseSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.MediMind.BodyStrong" />
+
+        <ProgressBar
+            android:id="@+id/doseProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="12dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_bar" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/reminderWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_medium"
+        android:accessibilityLiveRegion="polite"
+        android:background="@drawable/bg_warning_card"
+        android:padding="@dimen/space_medium"
+        android:textColor="@color/warning"
+        android:textSize="@dimen/text_caption"
+        android:visibility="gone" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/reminderSettings"
+        style="@style/Widget.MediMind.Button.Secondary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_small"
+        android:text="@string/action_settings"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_large"
+        android:text="@string/section_today_schedule"
+        android:textAppearance="@style/TextAppearance.MediMind.Section" />
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/space_medium"
+        android:indeterminateTint="@color/primary"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingStart="@dimen/space_large"
+        android:paddingTop="@dimen/space_large"
+        android:paddingEnd="@dimen/space_large"
+        android:paddingBottom="@dimen/space_small"
+        android:text="@string/empty_today"
+        android:textAppearance="@style/TextAppearance.MediMind.Body"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/retry"
+        style="@style/Widget.MediMind.Button.Secondary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_small"
+        android:text="@string/action_retry"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/doses"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/space_small" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/medical_disclaimer"
+        android:textAppearance="@style/TextAppearance.MediMind.Caption"
+        android:textSize="12sp" />
 </LinearLayout>

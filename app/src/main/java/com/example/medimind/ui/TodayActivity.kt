@@ -134,6 +134,10 @@ class TodayActivity : AppCompatActivity() {
                 b.empty.setText(R.string.empty_today)
                 b.empty.isVisible = items.isEmpty()
                 b.retry.isVisible = false
+                val taken = items.count { it.status == DoseStatus.TAKEN }
+                b.doseHero.isVisible = items.isNotEmpty()
+                b.doseSummary.text = getString(R.string.doses_taken_of, taken, items.size)
+                b.doseProgress.progress = if (items.isEmpty()) 0 else taken * 100 / items.size
                 adapter.submitList(items) {
                     val position = items.indexOfFirst {
                         adapter.highlighted == (it.scheduleId to it.doseDate)
@@ -143,6 +147,7 @@ class TodayActivity : AppCompatActivity() {
             } catch (e: CancellationException) {
                 throw e
             } catch (_: RuntimeException) {
+                b.doseHero.isVisible = false
                 b.empty.setText(R.string.error_load_doses)
                 b.empty.isVisible = true
                 b.retry.isVisible = true
