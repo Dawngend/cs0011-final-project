@@ -160,7 +160,8 @@ class MedicationFormActivity : AppCompatActivity() {
         clearErrors()
         if (issues.isNotEmpty()) {
             issues.forEach { issue -> errorView(issue.field)?.setError(getString(issue.messageResId)) }
-            errorView(issues.first().field)?.requestFocus()
+            errorView(issues.firstOrNull { errorView(it.field) != null }?.field ?: ValidationField.NAME)?.requestFocus()
+            issues.firstOrNull { errorView(it.field) == null }?.let { toast(it.messageResId) }
             return
         }
         saving = true
@@ -201,7 +202,8 @@ class MedicationFormActivity : AppCompatActivity() {
         ValidationField.STOCK -> b.stockQuantity
         ValidationField.UNITS_PER_DOSE -> b.unitsPerDose
         ValidationField.LOW_STOCK_THRESHOLD -> b.lowStockThreshold
-        else -> b.name
+        ValidationField.MEDICINE -> b.name
+        ValidationField.TIMES, ValidationField.DAYS -> null
     }
 
     private fun confirmCancel() {
