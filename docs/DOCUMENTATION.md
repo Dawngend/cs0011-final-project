@@ -12,7 +12,7 @@ CS0011 Final Project. This document follows the sections of `FINAL_CHECKLIST.md`
 | Language and tools | Kotlin, Android Studio, SQLite |
 | Package | `com.example.medimind` |
 | Version | 0.1 (debug build) |
-| Repository | `CS0011-Final-Project`, branch `test/complete-tc-11-to-29` |
+| Repository | `CS0011-Final-Project`, branch `main` |
 | Group | Group of 5 |
 
 Team and roles (from `TEAM_STANDARD.md`):
