@@ -1,47 +1,36 @@
-# Defects and Improvements Log (Template)
+# Defects and Improvements Log
 
-**Status:** preliminary log. The build and smoke checks passed on a Pixel 10 Pro API 37.1 emulator. No application defect has been confirmed yet; the full functional test cases are still pending.
+**Status:** final for the TC-01 to TC-29 test run of 2026-11-21. Every row below comes from a real result in `TEST_EXECUTION_LOG.md`. All retests were run on the emulator "Pixel 10 Pro API 37.1" (Android 17, API 37) with the debug build of branch `test/complete-tc-11-to-29`. The code fixes and the unit tests are in the commit that also adds this file.
 
-The activity needs at least 3 defects with corrections and at least 2 improvements based on test evidence.
-
-## How to Record Honestly
-
-- Write a defect only when a test really fails or you really see something wrong. Do not make one up to reach the count.
-- Record it right away, while you remember it. Write what you saw, not what you think it should have been.
-- Link each defect to the test case that found it. Keep the screenshot or a short note of the steps.
-- Write the real cause after you find it in the code. If you do not know the cause yet, leave it blank and say "under investigation".
-- Run the same test case again after the fix. Record the retest result, even if it still fails. A failed retest stays open.
-- If you find fewer than 3 defects, keep testing: odd inputs, rotation, rapid taps, long text, other Android versions. If there still are fewer, report the true number and tell the instructor. Do not invent the rest.
-- An improvement needs evidence: a test result, a slow step, a confusing screen or tester feedback. Write the evidence first, then the change, then what happened after.
-- Note the build or commit and the device for each retest, so the result can be checked later.
+**True count: 5 defects and 2 improvements.** All 5 defects were fixed and passed their retest. No defect was invented to reach a number; the extra pass on odd inputs (see the Test Execution Log) found none.
 
 ## Defects
 
 | ID | Found in test case | What happened | Cause | Fix | Retest result |
 | --- | --- | --- | --- | --- | --- |
-| D-01 | | | | | |
-| D-02 | | | | | |
-| D-03 | | | | | |
-| D-04 | | | | | |
-
-Add rows as needed. Optional extra columns: date found, device and Android version, commit of the fix, screenshot file name.
+| D-01 | TC-17 (Filter active and done) | A medicine with an end date in the past appeared under the Done filter, but its card still showed the green pill "Active" (the inactive one showed "Finished"). Screenshots: TC-17-done.png | `MedicationAdapter` chose the pill from `isActive` only. The Active and Done filters and the low-stock check in `DatabaseHelper` also look at the end date, so the screen disagreed with the filter. | New `Medication.isCurrentOn(today)` (active and end date not passed). The adapter and `DatabaseHelper.isLow` both use it. Unit test `medicineIsCurrentUntilItsEndDatePasses`. | Pass. With one current, one past-end-date and one inactive medicine, All shows 3, Active shows 1, Done shows 2, and both Done cards show "Finished". TC-17-retest-all.png, TC-17-retest-active.png, TC-17-retest-done.png |
+| D-02 | TC-28 (Overflow or invalid stock input) | With stock tracking on, a stock of 99999999999 saved with no error and the list then showed "Stock tracking off". The tracking setting was lost silently. Screenshots: TC-28-input.png, TC-28-result.png | `MedicationFormActivity` read the stock with `toIntOrNull()`. A number too large for an Int becomes `null`, and `null` means "tracking off" in the data model. Validation only saw the already converted value. | New `Validator.validateStockText` checks the raw text of stock, units per dose and threshold when tracking is on, and shows the existing field messages. Unit tests `trackedStockTextMustBeAWholeNumberThatFitsAnInt` and `stockTextIsIgnoredWhileTrackingIsOff`. | Pass. 99999999999 is rejected with "Enter a remaining quantity of zero or more whole units." and nothing is saved. A valid value 2147483647 still saves. TC-28-retest-input.png |
+| D-03 | TC-20 (Screen rotation in the Form) | After rotating the Form to landscape the name, dose, instructions and days stayed, but the whole DOSE TIMES list was empty. A user who saved after rotating would save a medicine with no time (and the form would show "Add at least one time."). Screenshots: TC-20-before.png, TC-20-after.png, TC-20-after-times.png | Android restores the text boxes and checkboxes by itself, but the time list is a plain Kotlin list built in code and was not saved. In edit mode `onCreate` also reloaded every field from the database, which would overwrite text the user had typed before rotating. | `onSaveInstanceState` stores the schedule ids and times and `restoreTimes` rebuilds the list. After a rotation the edit form no longer refills the fields from the database. | Pass. New form: 09:15 and days M T W stay after rotation. Edit form: a changed dose "45 mg" stays after rotation. TC-20-retest-before.png, TC-20-retest-after.png, TC-20-retest-after-times.png, TC-20-retest-edit-rotated.png |
+| D-04 | TC-01 and the list screen (Medications) | The Medications list showed name, dose, Active pill and stock, but not the dose times. TC-01 expects "Losartan 50 mg with times 08:00 and 20:00" in the list. Erold's TC-01 run on his build recorded the times as shown, so his build may have differed from this branch; his row was not edited. | The row layout `item_medication.xml` had no view for times and the list only loaded medicines, not their schedules. | New `MedicationRow(medication, times)`, `DatabaseHelper.getMedicationRows` (one schedules query, grouped by medicine) and a `times` TextView in the row ("Times: 08:00, 20:00"). | Pass. The list shows "Times: 08:00, 20:00" for Losartan and "Times: 01:00" for Metformin. D-04-retest.png, R-TC-01.png |
+| D-05 | TC-08 (Empty states), found in the regression run | On a clean install the Report showed 0, 0, 0 and the text "No missed doses in this period." (M-N7). TC-08 expects M-N6, "No doses in this period yet." The string `empty_report` existed in `strings.xml` but nothing used it. Erold's run recorded M-N6, so his build may have differed; his row was not edited. Screenshot: D-05-before.png | `ReportActivity.load` only toggled the "missed" empty text and never chose the "no doses" text. | When taken, missed and skipped are all 0 the empty text is `empty_report`; otherwise it stays `empty_missed`. | Pass. Clean install: "No doses in this period yet." With doses but none missed: "No missed doses in this period." D-05-retest-empty.png, D-05-retest-with-doses.png |
 
 ## Improvements
 
 | ID | Evidence (test case, defect or feedback) | Change made | Result after the change |
 | --- | --- | --- | --- |
-| I-01 | | | |
-| I-02 | | | |
-| I-03 | | | |
+| I-01 | TC-14: saving a medicine with a time that has already passed today gave no warning. The dose silently became "Not recorded" and counted as missed in the Report. The design lists this as message M-C4 ("Time already passed"), but the app never showed it. | `ScheduleTiming.passedToday` finds new times that are already due today for a medicine that starts today on a chosen weekday. If there are any, the Form asks "Time already passed" with Go back and Save anyway before saving. Unit test `onlyDueTimesOfAMedicineStartingTodayAreReportedAsPassed`. | Retested: saving 00:30 after 00:30 had passed showed the dialog "00:30 has already passed today. It will show as not recorded unless you mark it." Go back kept the form and saved nothing; Save anyway saved the medicine. I-01-retest-dialog.png |
+| I-02 | TC-28: a refill that overflows the stock (2147483647 plus 1) was rejected correctly but the only message was the generic "Could not update stock. Please try again.", which does not say what to change. | `Validator.isValidRefill` checks the amount before the database call (at least 1 and not above the Int limit) and the dialog shows "Enter a positive whole refill quantity within the supported limit." Unit test `refillMustBePositiveAndStayInsideTheIntRange`. | Retested: refill 1 on stock 2147483647 shows the new message and leaves the stock unchanged; refill 0 was also rejected with the stock unchanged. A valid refill still works (stock 0 to 5, notification latch cleared). I-02-retest-overflow.png, TC-27-retest-refill.png |
 
-Add rows as needed. Optional extra columns: date, commit, before and after screenshot file names.
-
-## Summary (fill in at the end)
+## Summary
 
 | Item | Count |
 | --- | --- |
-| Test cases run | 13 smoke checks |
-| Passed on first run | 12 |
-| Defects found | |
-| Defects fixed and retested | |
-| Improvements made | |
+| Test cases run | 29 (TC-01 to TC-10 by Erold on 2026-11-20, TC-11 to TC-29 on 2026-11-21) |
+| Passed on first run | 26 (TC-17, TC-20 and TC-28 failed first) |
+| Final status | 29 Pass, 0 Fail, 0 Inconclusive, 0 Pending |
+| Defects found | 5 (D-01 to D-05) |
+| Defects fixed and retested | 5 |
+| Improvements made | 2 (I-01, I-02) |
+| Unit tests added | 5 tests in `app/src/test/java/com/example/medimind/util/TestFixesTest.kt` |
+
+Note on D-04 and D-05: both appeared as differences between this branch and Erold's recorded TC-01 and TC-08 results. Erold's rows are kept as he recorded them, and these two were found on the current branch, not on his device.

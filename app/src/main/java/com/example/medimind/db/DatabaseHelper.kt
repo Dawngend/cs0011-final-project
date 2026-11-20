@@ -151,6 +151,13 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
         )
     }
 
+    /** Same list as getAllMedications, with each medicine's dose times for the Medications screen. */
+    fun getMedicationRows(query: String?, filter: MedFilter): List<MedicationRow> {
+        val medications = getAllMedications(query, filter)
+        val times = schedules(readableDatabase).groupBy({ it.medicationId }, { it.timeOfDay })
+        return medications.map { MedicationRow(it, times[it.id].orEmpty()) }
+    }
+
     fun medicationExists(name: String, dose: String, excludeId: Long = -1L): Boolean =
         exists(readableDatabase, name, dose, excludeId)
 
@@ -441,8 +448,7 @@ class DatabaseHelper internal constructor(context: Context, name: String = DATAB
     }
 
     private fun isLow(m: Medication, today: LocalDate = DateUtils.now().toLocalDate()) =
-        m.isActive &&
-            (m.endDate == null || m.endDate >= DateUtils.formatDate(today)) &&
+        m.isCurrentOn(DateUtils.formatDate(today)) &&
             m.stockQuantity != null &&
             m.stockQuantity <= m.lowStockThreshold
 

@@ -90,6 +90,8 @@
     <string name="action_add_medication">Add medication</string>
     <string name="action_discard">Discard</string>
     <string name="action_keep_editing">Keep editing</string>
+    <string name="action_save_anyway">Save anyway</string>
+    <string name="action_go_back">Go back</string>
     <string name="hint_refill_units">Whole units</string>
 
     <!-- Screen chrome -->
@@ -112,6 +114,7 @@
     <string name="filter_done">Done</string>
     <string name="medication_active">Active</string>
     <string name="medication_finished">Finished</string>
+    <string name="medication_times">Times: %1$s</string>
     <string name="stock_off">Stock tracking off</string>
     <string name="stock_low">Low stock: %1$d units</string>
     <string name="stock_units">Stock: %1$d units</string>

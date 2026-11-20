@@ -66,7 +66,7 @@ class MedicationsActivity : AppCompatActivity() {
         loadJob = lifecycleScope.launch {
             b.loading.isVisible = true
             try {
-                val items = withContext(Dispatchers.IO) { db.getAllMedications(b.search.text.toString(), filter) }
+                val items = withContext(Dispatchers.IO) { db.getMedicationRows(b.search.text.toString(), filter) }
                 adapter.submitList(items)
                 b.empty.text = when {
                     items.isNotEmpty() -> ""

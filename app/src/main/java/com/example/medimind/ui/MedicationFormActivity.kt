@@ -19,6 +19,7 @@ import com.example.medimind.model.Schedule
 import com.example.medimind.reminder.ReminderScheduler
 import com.example.medimind.util.DateUtils
 import com.example.medimind.util.Extras
+import com.example.medimind.util.ScheduleTiming
 import com.example.medimind.util.ValidationField
 import com.example.medimind.util.Validator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -57,14 +58,18 @@ class MedicationFormActivity : AppCompatActivity() {
         b.stockTracking.setOnCheckedChangeListener { _, checked -> b.stockFields.isVisible = checked }
         b.cancel.setOnClickListener { confirmCancel() }
         b.save.setOnClickListener { save() }
-        if (medicationId() > 0) loadExisting(medicationId()) else b.startDate.setText(today())
+        // After a rotation Android restores the typed text and the checkboxes. Only the times list is ours.
+        val restored = savedInstanceState != null
+        savedInstanceState?.let(::restoreTimes)
+        if (medicationId() > 0) loadExisting(medicationId(), fillFields = !restored)
+        else if (!restored) b.startDate.setText(today())
     }
 
     private fun medicationId() = intent.getLongExtra(Extras.MEDICATION_ID, -1L)
 
     private fun today() = DateUtils.formatDate(DateUtils.now().toLocalDate())
 
-    private fun loadExisting(id: Long) {
+    private fun loadExisting(id: Long, fillFields: Boolean) {
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) { db.getMedication(id) to db.getSchedulesForMedication(id) }
             existing = result.first
@@ -73,6 +78,7 @@ class MedicationFormActivity : AppCompatActivity() {
                 finish()
                 return@launch
             }
+            if (!fillFields) return@launch
             val m = existing!!
             b.name.setText(m.name)
             b.dose.setText(m.dose)
@@ -88,6 +94,19 @@ class MedicationFormActivity : AppCompatActivity() {
             b.lowStockThreshold.setText(String.format(Locale.getDefault(), "%d", m.lowStockThreshold))
             renderTimes()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLongArray(STATE_TIME_IDS, schedules.map { it.id }.toLongArray())
+        outState.putStringArray(STATE_TIMES, schedules.map { it.timeOfDay }.toTypedArray())
+    }
+
+    private fun restoreTimes(state: Bundle) {
+        val ids = state.getLongArray(STATE_TIME_IDS) ?: return
+        val times = state.getStringArray(STATE_TIMES) ?: return
+        ids.zip(times).forEach { (id, time) -> schedules += Schedule(id = id, timeOfDay = time, daysOfWeek = emptySet()) }
+        renderTimes()
     }
 
     private fun pickDate(target: TextView, initial: String) {
@@ -156,7 +175,13 @@ class MedicationFormActivity : AppCompatActivity() {
         val medication = medicationFromFields()
         val withDays = schedules.map { it.copy(daysOfWeek = selectedDays()) }
         val duplicate = db.medicationExists(medication.name, medication.dose, medication.id)
-        val issues = Validator.validateMedication(medication, withDays, existing != null, today(), duplicate)
+        val stockIssues = Validator.validateStockText(
+            b.stockTracking.isChecked,
+            b.stockQuantity.text.toString(),
+            b.unitsPerDose.text.toString(),
+            b.lowStockThreshold.text.toString(),
+        )
+        val issues = stockIssues + Validator.validateMedication(medication, withDays, existing != null, today(), duplicate)
         clearErrors()
         if (issues.isNotEmpty()) {
             issues.forEach { issue -> errorView(issue.field)?.setError(getString(issue.messageResId)) }
@@ -164,6 +189,18 @@ class MedicationFormActivity : AppCompatActivity() {
             issues.firstOrNull { errorView(it.field) == null }?.let { toast(it.messageResId) }
             return
         }
+        val newTimes = withDays.filter { it.id == -1L }.map { it.timeOfDay }
+        val passed = ScheduleTiming.passedToday(newTimes, selectedDays(), medication.startDate, DateUtils.now())
+        if (passed.isEmpty()) persist(medication, withDays)
+        else MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.confirm_passed_title)
+            .setMessage(getString(R.string.confirm_passed_body, passed.joinToString(", ")))
+            .setNegativeButton(R.string.action_go_back, null)
+            .setPositiveButton(R.string.action_save_anyway) { _, _ -> persist(medication, withDays) }
+            .show()
+    }
+
+    private fun persist(medication: Medication, withDays: List<Schedule>) {
         saving = true
         b.save.isEnabled = false
         lifecycleScope.launch {
@@ -214,4 +251,9 @@ class MedicationFormActivity : AppCompatActivity() {
     private fun hasChanges() = b.name.text.isNotBlank() || b.dose.text.isNotBlank() || b.instructions.text.isNotBlank() || schedules.isNotEmpty() || b.stockTracking.isChecked
 
     private fun toast(message: Int) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+    private companion object {
+        const val STATE_TIME_IDS = "time_ids"
+        const val STATE_TIMES = "times"
+    }
 }

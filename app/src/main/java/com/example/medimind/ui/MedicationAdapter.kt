@@ -2,16 +2,19 @@ package com.example.medimind.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.medimind.R
 import com.example.medimind.databinding.ItemMedicationBinding
 import com.example.medimind.model.Medication
+import com.example.medimind.model.MedicationRow
+import com.example.medimind.util.DateUtils
 import java.util.Locale
 
 class MedicationAdapter(private val onClick: (Medication) -> Unit) :
-    ListAdapter<Medication, MedicationAdapter.Holder>(DIFF) {
+    ListAdapter<MedicationRow, MedicationAdapter.Holder>(DIFF) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         Holder(ItemMedicationBinding.inflate(LayoutInflater.from(parent.context), parent, false), onClick)
 
@@ -22,13 +25,17 @@ class MedicationAdapter(private val onClick: (Medication) -> Unit) :
             b.root.clipToOutline = true
         }
 
-        fun bind(m: Medication) {
+        fun bind(row: MedicationRow) {
+            val m = row.medication
             val c = b.root.context
+            b.times.text = c.getString(R.string.medication_times, row.times.joinToString(", "))
+            b.times.isVisible = row.times.isNotEmpty()
             b.name.text = m.name
             b.dose.text = m.dose
-            b.schedule.text = c.getString(if (m.isActive) R.string.medication_active else R.string.medication_finished)
-            b.schedule.setBackgroundResource(if (m.isActive) R.drawable.bg_pill_success else R.drawable.bg_pill)
-            b.schedule.setTextColor(c.getColor(if (m.isActive) R.color.success else R.color.text_secondary))
+            val current = m.isCurrentOn(DateUtils.formatDate(DateUtils.now().toLocalDate()))
+            b.schedule.text = c.getString(if (current) R.string.medication_active else R.string.medication_finished)
+            b.schedule.setBackgroundResource(if (current) R.drawable.bg_pill_success else R.drawable.bg_pill)
+            b.schedule.setTextColor(c.getColor(if (current) R.color.success else R.color.text_secondary))
             val quantity = m.stockQuantity
             b.stock.text = when {
                 quantity == null -> c.getString(R.string.stock_off)
@@ -49,9 +56,9 @@ class MedicationAdapter(private val onClick: (Medication) -> Unit) :
     }
 
     companion object {
-        private val DIFF = object : DiffUtil.ItemCallback<Medication>() {
-            override fun areItemsTheSame(old: Medication, new: Medication) = old.id == new.id
-            override fun areContentsTheSame(old: Medication, new: Medication) = old == new
+        private val DIFF = object : DiffUtil.ItemCallback<MedicationRow>() {
+            override fun areItemsTheSame(old: MedicationRow, new: MedicationRow) = old.medication.id == new.medication.id
+            override fun areContentsTheSame(old: MedicationRow, new: MedicationRow) = old == new
         }
     }
 }

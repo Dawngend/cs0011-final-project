@@ -73,4 +73,26 @@ object Validator {
         if (m.lowStockThreshold < 0)
             error(ValidationField.LOW_STOCK_THRESHOLD, R.string.error_low_stock_threshold)
     }
+
+    /**
+     * Checks the raw stock text boxes. toIntOrNull() turns an empty or too large number into
+     * null, which the form would otherwise read as "stock tracking off".
+     */
+    fun validateStockText(
+        tracking: Boolean,
+        stock: String,
+        units: String,
+        threshold: String,
+    ): List<ValidationIssue> = buildList {
+        if (!tracking) return@buildList
+        if (stock.trim().toIntOrNull() == null) add(ValidationIssue(ValidationField.STOCK, R.string.error_stock))
+        if (units.isNotBlank() && units.trim().toIntOrNull() == null)
+            add(ValidationIssue(ValidationField.UNITS_PER_DOSE, R.string.error_units_per_dose))
+        if (threshold.isNotBlank() && threshold.trim().toIntOrNull() == null)
+            add(ValidationIssue(ValidationField.LOW_STOCK_THRESHOLD, R.string.error_low_stock_threshold))
+    }
+
+    /** A refill must be at least 1 and must not push the stock past the largest Int. */
+    fun isValidRefill(currentStock: Int, amount: Int): Boolean =
+        amount >= 1 && amount <= Int.MAX_VALUE - currentStock
 }

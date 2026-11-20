@@ -24,4 +24,17 @@ internal object ScheduleTiming {
         }
         return null
     }
+
+    /** Sorted times that are already due today, for a medicine that starts today on today's weekday. */
+    fun passedToday(
+        times: List<String>,
+        days: Set<Int>,
+        startDate: String,
+        now: LocalDateTime,
+    ): List<String> {
+        if (startDate != DateUtils.formatDate(now.toLocalDate()) || now.dayOfWeek.value !in days)
+            return emptyList()
+        val current = DateUtils.formatTime(now.toLocalTime())
+        return times.filter { it <= current }.sorted()
+    }
 }

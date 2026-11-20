@@ -15,6 +15,7 @@ import com.example.medimind.db.DatabaseHelper
 import com.example.medimind.model.Medication
 import com.example.medimind.reminder.ReminderScheduler
 import com.example.medimind.util.Extras
+import com.example.medimind.util.Validator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -89,9 +90,14 @@ class MedicationDetailActivity : AppCompatActivity() {
         val input = EditText(this).apply { hint = getString(R.string.hint_refill_units); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
         MaterialAlertDialogBuilder(this).setTitle(R.string.action_add_refill).setView(input).setNegativeButton(R.string.action_cancel, null).setPositiveButton(R.string.action_add) { _, _ ->
             val amount = input.text.toString().toIntOrNull()
-            val id = medication?.id ?: return@setPositiveButton
+            val m = medication ?: return@setPositiveButton
+            if (amount == null || !Validator.isValidRefill(m.stockQuantity ?: 0, amount)) {
+                toast(R.string.error_refill)
+                return@setPositiveButton
+            }
+            val id = m.id
             lifecycleScope.launch {
-                val ok = withContext(Dispatchers.IO) { amount != null && db.restockMedication(id, amount) }
+                val ok = withContext(Dispatchers.IO) { db.restockMedication(id, amount) }
                 if (ok) { ReminderScheduler.checkLowStock(this@MedicationDetailActivity, id); load() } else toast(R.string.error_refill_save)
             }
         }.show()

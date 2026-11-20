@@ -85,6 +85,8 @@ class ReportActivity : AppCompatActivity() {
                 b.skippedValue.text = String.format(Locale.getDefault(), "%d", summary.skipped)
                 val missed = result.second
                 missedAdapter.submitList(missed)
+                val noDoses = summary.taken + summary.missed + summary.skipped == 0
+                b.missedEmpty.setText(if (noDoses) R.string.empty_report else R.string.empty_missed)
                 b.missedEmpty.isVisible = missed.isEmpty()
             } finally {
                 b.loading.isVisible = false
