@@ -20,10 +20,10 @@ Team and roles (from `TEAM_STANDARD.md`):
 | Member | Role |
 | --- | --- |
 | Dawn Andrei Pamesa | Reviews shared setup and merges pull requests; final test run, fixes and documentation |
-| David | Database, models, stock persistence and stock alerts |
-| Clarence | Form, Detail and refill screens |
-| Joboy | Testing of deductions, corrections, permissions, thresholds, refills and overflow |
-| Erold | Diagrams, user guide and the first ten test cases (TC-01 to TC-10) |
+| David Decano | Database, models, stock persistence and stock alerts |
+| Clarence Dominick Canaria | Form, Detail and refill screens |
+| Joboy Porras Jr. | Testing of deductions, corrections, permissions, thresholds, refills and overflow |
+| Erold Jan P. Leocario | Diagrams, user guide and the first ten test cases (TC-01 to TC-10) |
 
 ## 2. Project Description and Overview
 
